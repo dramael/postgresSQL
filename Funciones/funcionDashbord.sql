@@ -4,7 +4,7 @@ BEGIN
 EXECUTE (
 	'drop table if exists test.d'||tabla||' ;
 	create table if not exists test.d'||tabla||' as select id, geom, calle, fromleft,toleft,fromright, toright,	localidad, contnombre,contnombre2, tcalle, "check" from _cartografia.'||tabla||';
-	drop table if exists test.dasbord_'||tabla||';
+	drop table if exists test.dashbord_'||tabla||';
 	create table if not exists test.dashbord_'||tabla|| ' as
 		select * from ( -- frecuencia
 			select st_buffer(geom,10) as geom , calle::text, fromleft::int, toleft::int,fromright::int, toright::int, localidad::text, ''frecuencia''::text as tipo from test.d'||tabla|| '
