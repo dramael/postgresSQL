@@ -135,7 +135,7 @@ EXECUTE (
 			where calle is not null
 			group by st_astext(geom), calle, tipo
 			having count (concat(st_astext(geom), calle, tipo)) <> 1)x
-		union --nombre
+		union -- nombre
 			select null::geometry(polygon,5347) geom,
 			concat( ''"calle"= '', '''' ,acalle,'''', '' or "calle"=  '','''', bcalle ,'''','' and "localidad" =  '','''', f.localidad,'''') as calle,
 			null::int as fromleft, null::int as toleft, null::int as fromright, null::int as toright,

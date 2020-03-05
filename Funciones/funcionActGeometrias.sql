@@ -155,8 +155,7 @@ EXECUTE (
     update capas_gral.comisaria_zona_argentina a set departamen = b.circunscri
     from capas_gral.comisaria_circunscripciones_argentina b 
     where st_within (st_centroid(st_transform(a.geom,4326)), st_transform(b.geom,4326)) and a.departamen is  null and a.fechamod ::date = ''today'';
-    update capas_gral.comisaria_zona_argentina a set departamen	= concat(''JEF. DE '', partido) WHERE departamen is  null and fechamod ::date = ''today'';'
-);
+    update capas_gral.comisaria_zona_argentina a set departamen	= concat(''JEF. DE '', partido) WHERE departamen is  null and fechamod ::date = ''today'';');
 RETURN query execute ('
     select concat(a.fechamod::date, '' Asentamientos'')::text, count (a.fechamod::date)::int
     from
