@@ -5,6 +5,8 @@ EXECUTE (
 	'drop table if exists test.d'||tabla||' ;
 	create table if not exists test.d'||tabla||' as select id, geom, calle, fromleft,toleft,fromright, toright,	localidad, contnombre,contnombre2, tcalle, "check" from _cartografia.'||tabla||';
 	drop table if exists test.dashbord_'||tabla||';
+	drop table if exists test.sub_'||tabla||';
+	select test.segmentossubdividos('''||tabla||''');
 	create table if not exists test.dashbord_'||tabla|| ' as
 		select * from ( -- frecuencia
 				select st_buffer(geom,10) as geom , calle::text, fromleft::int, toleft::int,fromright::int, toright::int, localidad::text, ''frecuencia''::text as tipo from test.d'||tabla|| '
@@ -184,7 +186,10 @@ EXECUTE (
 				order by 3) x
 			) f order by 2,3)f
 			on a.localidad = f.localidad and (a.calle = f.acalle or a.calle = f.bcalle)
-			group by acalle, bcalle, f.localidad,k)t;	
+			group by acalle, bcalle, f.localidad,k)	x
+		union -- subdividos
+			select st_buffer(geom,10) as geom, calle::text, null::int as fromleft, null::int as toleft, null::int as fromright, null::int as toright,  null::text as localidad,''subdividido''::text as tipo
+			from test.sub_'||tabla||' ;
 	drop table if exists test.d'||tabla);
 RETURN query execute ('
 	select tipo, count(*)::int as cantidad from  test.dashbord_'||tabla||' 	group by tipo');
