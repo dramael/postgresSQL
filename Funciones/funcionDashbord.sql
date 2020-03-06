@@ -9,11 +9,11 @@ EXECUTE (
 		select * from ( -- frecuencia
 			select st_buffer(geom,10) as geom , calle::text, fromleft::int, toleft::int,fromright::int, toright::int, localidad::text, ''frecuencia''::text as tipo from test.d'||tabla|| '
 			where 	((tcalle is null or tcalle <> 12) and ("check" <> ''FALSO'' or "check" is null) and (fromleft+toleft+fromright+toright) <>0 AND CALLE IS NOT NULL and (fromleft+toleft) <> 0 and (fromright+toright) <>0) 
-			and 	((right(toleft::text,1) <> ''8'')and (right(fromleft::text,1) <> ''0'')and (right(fromright::text,1) <> ''1'')and (right(toright::text,1) <> ''9''))
-			or 	((fromleft > toleft)or (fromright > toright))
-			or 	(fromleft > fromright and (fromright+toright) <>0)
-			or 	(toleft > toright and (fromright+toright) <>0)
-			or 	(toleft+1 <> toright or fromleft+1 <> fromright)
+			and 	((right(fromleft::text,1) <> ''0'') or (right(toleft::text,1) <> ''8'') or (right(fromright::text,1) <> ''1'') or (right(toright::text,1) <> ''9''))
+			or 		((fromleft > toleft)or (fromright > toright))
+			or 		(fromleft > fromright and (fromright+toright) <>0)
+			or 		(toleft > toright and (fromright+toright) <>0)
+			or 		(toleft+1 <> toright or fromleft+1 <> fromright)
 			and 	(fromleft+toleft) <> 0
 			and 	(fromright -1 <> fromleft and (fromright+toright) <>0)
 		union -- calles duplicadas
