@@ -139,10 +139,11 @@ EXECUTE (
 			having count (concat(st_astext(geom), calle, tipo)) <> 1)x
 		union -- nombre
 			select null::geometry(polygon,5347) geom,
-			concat( ''"calle"= '', '''' ,acalle,'''', '' or "calle"=  '','''', bcalle ,'''','' and "localidad" =  '','''', f.localidad,'''') as calle,
+			concat( ''"calle"= '', k ,acalle,k,'' or "calle"=  '',k, bcalle ,k,'' and "localidad" =  '',k, f.localidad,k) as calle, 
 			null::int as fromleft, null::int as toleft, null::int as fromright, null::int as toright,
 			null::text as localidad, ''nombre''::text as tipo
 			from test.d'||tabla|| '   a
+			inner join singlequote on k <> ''calle''
 			inner join 
 			(select localidad, acalle, bcalle
 			from (
@@ -176,7 +177,7 @@ EXECUTE (
 				order by 3) x
 			) f order by 2,3)f
 			on a.localidad = f.localidad and (a.calle = f.acalle or a.calle = f.bcalle)
-			group by acalle, bcalle, f.localidad)t;	
+			group by acalle, bcalle, f.localidad,k)t;	
 	drop table if exists test.d'||tabla);
 RETURN query execute ('
 	select tipo, count(*)::int as cantidad from  test.dashbord_'||tabla||' 	group by tipo');
