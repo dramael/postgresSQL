@@ -7,15 +7,22 @@ EXECUTE (
 	drop table if exists test.dashbord_'||tabla||';
 	create table if not exists test.dashbord_'||tabla|| ' as
 		select * from ( -- frecuencia
-			select st_buffer(geom,10) as geom , calle::text, fromleft::int, toleft::int,fromright::int, toright::int, localidad::text, ''frecuencia''::text as tipo from test.d'||tabla|| '
-			where 	((tcalle is null or tcalle <> 12) and ("check" <> ''FALSO'' or "check" is null) and (fromleft+toleft+fromright+toright) <>0 AND CALLE IS NOT NULL and (fromleft+toleft) <> 0 and (fromright+toright) <>0) 
-			and 	((right(fromleft::text,1) <> ''0'') or (right(toleft::text,1) <> ''8'') or (right(fromright::text,1) <> ''1'') or (right(toright::text,1) <> ''9''))
-			or 		((fromleft > toleft)or (fromright > toright))
-			or 		(fromleft > fromright and (fromright+toright) <>0)
-			or 		(toleft > toright and (fromright+toright) <>0)
-			or 		(toleft+1 <> toright or fromleft+1 <> fromright)
-			and 	(fromleft+toleft) <> 0
-			and 	(fromright -1 <> fromleft and (fromright+toright) <>0)
+				select st_buffer(geom,10) as geom , calle::text, fromleft::int, toleft::int,fromright::int, toright::int, localidad::text, ''frecuencia''::text as tipo from test.d'||tabla|| '
+				where 	((tcalle is null or tcalle <> 12) and ("check" <> ''FALSO'' or "check" is null) and (fromleft+toleft+fromright+toright) <>0 AND CALLE IS NOT NULL and (fromleft+toleft) <> 0 and (fromright+toright) <>0) 
+				and 	((right(fromleft::text,1) <> ''0'') or (right(toleft::text,1) <> ''8'') or (right(fromright::text,1) <> ''1'') or (right(toright::text,1) <> ''9''))
+				or 		((fromleft > toleft)or (fromright > toright))
+				or 		(fromleft > fromright and (fromright+toright) <>0)
+				or 		(toleft > toright and (fromright+toright) <>0)
+				or 		(toleft+1 <> toright or fromleft+1 <> fromright)
+				and 	(fromleft+toleft) <> 0
+				and 	(fromright -1 <> fromleft and (fromright+toright) <>0)
+			union
+				select st_buffer(geom,10) as geom , calle::text, fromleft::int, toleft::int,fromright::int, toright::int, localidad::text, ''frecuencia''::text as tipo from test.d'||tabla|| '
+				where 	(("check" <> ''FALSO'' or "check" is null) AND (CALLE IS NOT NULL) AND (((fromleft+toleft) <> 0 AND (fromright+toright) = 0) OR ((fromright+toright) <> 0 AND (fromleft+toleft) = 0)))
+				and 	(fromleft > toleft and (fromleft+toleft) <> 0) 
+				or 		(fromright > toright and fromright + toright <> 0)
+				or 		((fromleft+toleft)<>0 and ((right(toleft::text,1) <> ''8'') or (right(fromleft::text,1) <> ''0'')))
+				or 		((fromright+toright)<>0 and ((right(toright::text,1) <> ''9'') or (right(fromright::text,1) <> ''1'')))
 		union -- calles duplicadas
 			select 	st_buffer((st_dump(st_union (geom))).geom,5) as geom,calle, fromleft, toleft,fromright, toright, localidad, ''callesduplicadas'' as tipo from (
 				select st_union(geom) as geom,localidad, calle, fromleft,toleft,fromright,toright from test.d'||tabla||'
