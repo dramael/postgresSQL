@@ -189,7 +189,172 @@ EXECUTE (
 			group by acalle, bcalle, f.localidad,k)	x
 		union -- subdividos
 			select st_buffer(geom,10) as geom, calle::text, null::int as fromleft, null::int as toleft, null::int as fromright, null::int as toright,  null::text as localidad,''subdividido''::text as tipo
-			from test.sub_'||tabla||' ;
+			from test.sub_'||tabla||'
+		union -- duplicadas d'||tabla||' 
+			select st_buffer(geom,15) as geom , calle::text,fromleft::int, toleft::int,fromright::int, toright::int, localidad::text, ''callesduplicadas''::text as tipo from (
+				select st_buffer((st_dump(st_union (geom))).geom,15) as geom,localidad, calle, fromleft,toleft,fromright,toright from 
+					(select geom, localidad, calle, fromleft, toleft,fromright, toright from 
+						(
+							select distinct (id) id, geom, a.localidad, a.calle, a.fromleft,a.toleft,a.fromright,a.toright from test.d'||tabla||'  a 
+							inner join (select localidad, calle,ind from 
+								(select localidad, calle, generate_series(min, max) ind from 
+									(select  ID,localidad, calle,min(fromleft)min, max(toleft)max from test.d'||tabla||' 
+									where (fromleft+toleft) <> 0 AND (fromright+toright) = 0 and CALLE IS NOT NULL 
+									group by ID,localidad, calle
+									)x 
+								) a group by localidad, calle, ind having count (concat(localidad, calle, ind)) <> 1
+							) b on (a.localidad = b.localidad and a.calle = b.calle and b.ind BETWEEN a.fromleft and a.toleft)
+						) z
+					) f group by localidad, calle, fromleft, toleft, fromright, toright
+
+				union
+				select (st_dump(st_union (geom))).geom as geom,localidad, calle, fromleft,toleft,fromright,toright from 
+					(select geom, localidad, calle, fromleft, toleft,fromright, toright from 
+						(
+							select distinct (id) id, geom, a.localidad, a.calle, a.fromleft,a.toleft,a.fromright,a.toright from test.d'||tabla||'  a 
+							inner join (select localidad, calle,ind from 
+								(select localidad, calle, generate_series(min, max) ind from 
+									(select  ID,localidad, calle,min(fromright)min, max(toright)max from test.d'||tabla||' 
+									where (fromright+toright) <> 0 AND (fromleft+toleft) = 0 and CALLE IS NOT NULL 
+									group by ID,localidad, calle
+									)x
+								) a group by localidad, calle, ind having count (concat(localidad, calle, ind)) <> 1
+							) b on (a.localidad = b.localidad and a.calle = b.calle and b.ind BETWEEN a.fromright and a.toright)
+						) z
+			) f group by localidad, calle, fromleft, toleft, fromright, toright)x
+		union -- continuidadaltura
+			select st_buffer(geom,15) as geom, calle::text, fromleft::int, toleft::int, fromright::int, toright::int, localidad::text, ''continuidadaltura''::text as tipo  from ((select E.* from 
+				(select distinct (id) id , st_buffer(geom,10) as geom , x.calle, fromleft, toleft, fromright, toright, x.localidad from (
+					select  a.*  from test.d'||tabla||'  a
+					inner join (
+						select b.localidad,b.calle,ind from test.d'||tabla||'  a
+						right JOIN   
+						(
+							select  * from (
+								select localidad, calle, generate_series(min, max) ind from (
+								select localidad, calle,
+								min(fromright)min, max(toright)max from test.d'||tabla||' 
+								where (fromright+toright) = 0 and (fromright+toright) <> 0 AND CALLE IS NOT NULL 
+								group by localidad, calle) b
+								order by 1,2) a 
+									)b
+						on (a.localidad = b.localidad and a.calle = b.calle and b.ind BETWEEN a.fromright and a.toright)
+						where id is null -- Devuelve los valores que no se encuentra en la secuencia total x localidad y calle
+
+					) b on a.localidad = b.localidad and a.calle = b.calle
+					and ((a.fromright+a.toright) <> 0 and (fromleft+a.toleft) = 0 AND a.CALLE IS NOT NULL
+								and a.toright+1 = b.ind) 
+					union
+					select a.* from test.d'||tabla||'  a
+					inner join (
+
+						select b.localidad,b.calle,ind from test.d'||tabla||'  a
+						right JOIN  
+						(
+								select  * from (
+								select localidad, calle, generate_series(min, max) ind from (
+								select localidad, calle,
+								min(fromright)min, max(toright)max from test.d'||tabla||' 
+								where CALLE IS NOT NULL 
+								and (fromright+toright) <> 0 and (fromleft + toleft) = 0
+								group by localidad, calle) b
+								order by 1,2) a
+						)b
+						on (a.localidad = b.localidad and a.calle = b.calle and b.ind BETWEEN a.fromright and a.toright)
+						where id is null -- Devuelve los valores que no se encuentra en la secuencia total x localidad y calle
+							) b on a.localidad = b.localidad and a.calle = b.calle
+					and (a.CALLE IS NOT NULL  and (a.fromright+a.toright) <> 0 and (a.fromleft+a.toleft) = 0
+					and b.ind+1 between a.fromright and a.toright)
+					order by id
+				) x
+				inner join 
+				(
+				select  localidad, calle, min(ind), max(ind) from (
+								select localidad, calle, generate_series(min, max) ind from (
+								select localidad, calle,
+								min(fromright)min, max(toright)max from test.d'||tabla||' 
+								where CALLE IS NOT NULL 
+								and (fromright+toright) <> 0 and (fromleft+toleft) = 0
+								group by localidad, calle) b
+				) a group by localidad, calle 
+				) d
+				on x.localidad = d.localidad and x.calle = d.calle
+				where fromright <> min and toright <> max 
+				) E
+				right join
+				test.d'||tabla||'  f on st_intersects (e.geom, f.geom)
+				where e.localidad =  f.localidad and e.calle = f.calle and e.id <> f.id
+				and e.toright + 2 <> f.fromright AND F.TOright+ 2 <> E.FROMright and
+				f.CALLE IS NOT NULL 
+								and (f.fromright+f.toright) <> 0 and (f.fromleft+f.toleft) = 0
+				order by e.localidad, e.calle)
+				union
+				(select E.* from 
+				(select distinct (id) id , geom , x.calle, fromleft, toleft, fromright, toright, x.localidad from (
+					select  a.*  from test.d'||tabla||'  a
+					inner join (
+						select b.localidad,b.calle,ind from test.d'||tabla||'  a
+						right JOIN   
+						(
+							select  * from (
+								select localidad, calle, generate_series(min, max) ind from (
+								select localidad, calle,
+								min(fromleft)min, max(toleft)max from test.d'||tabla||' 
+								where (fromleft+toleft) <>0 and (fromright+toright) = 0 AND CALLE IS NOT NULL 
+								group by localidad, calle) b
+								order by 1,2) a 
+									)b
+						on (a.localidad = b.localidad and a.calle = b.calle and b.ind BETWEEN a.fromleft and a.toleft)
+						where id is null 
+
+					) b on a.localidad = b.localidad and a.calle = b.calle
+					and ((a.fromleft+a.toleft) <> 0 and (fromright+a.toright) = 0 AND a.CALLE IS NOT NULL
+								and a.toleft+1 = b.ind) 
+					union
+					select a.* from test.d'||tabla||'  a
+					inner join (
+
+						select b.localidad,b.calle,ind from test.d'||tabla||'  a
+						right JOIN  
+						(
+								select  * from (
+								select localidad, calle, generate_series(min, max) ind from (
+								select localidad, calle,
+								min(fromleft)min, max(toleft)max from test.d'||tabla||' 
+								where CALLE IS NOT NULL 
+								and (fromleft+toleft) <> 0 and (fromright+toright) = 0
+								group by localidad, calle) b
+								order by 1,2) a -- Devuelve la secuenca total x localidad y calle
+						)b
+						on (a.localidad = b.localidad and a.calle = b.calle and b.ind BETWEEN a.fromleft and a.toleft)
+						where id is null -- Devuelve los valores que no se encuentra en la secuencia total x localidad y calle
+							) b on a.localidad = b.localidad and a.calle = b.calle
+					and (a.CALLE IS NOT NULL  and (a.fromleft+a.toleft) <> 0 and (a.fromright+a.toright) = 0
+					and b.ind+1 between a.fromleft and a.toleft) 
+					order by id
+				) x -- Devuelve todos los registros incorrectos
+				inner join 
+				(
+				select  localidad, calle, min(ind), max(ind) from (
+								select localidad, calle, generate_series(min, max) ind from (
+								select localidad, calle,
+								min(fromleft)min, max(toleft)max from test.d'||tabla||' 
+								where CALLE IS NOT NULL 
+								and (fromleft+toleft) <> 0 and (fromright+toright) = 0
+								group by localidad, calle) b
+				) a group by localidad, calle
+				) d
+				on x.localidad = d.localidad and x.calle = d.calle
+				where fromleft <> min and toright <> max
+				) E
+				left join
+				test.d'||tabla||'  f on st_intersects (e.geom, f.geom)
+				where e.localidad =  f.localidad and e.calle = f.calle and e.id <> f.id
+				and e.toleft + 2 <> f.fromleft AND F.TOLEFT+ 2 <> E.FROMLEFT and
+				f.CALLE IS NOT NULL 
+								and (f.fromleft+f.toleft) <> 0 and (f.fromright+f.toright) = 0
+				order by e.localidad, e.calle))x;
+
 	drop table if exists test.d'||tabla);
 RETURN query execute ('
 	select tipo, count(*)::int as cantidad from  test.dashbord_'||tabla||' 	group by tipo');
