@@ -48,3 +48,4 @@ return query execute ('
 	select count(*)::int from test.sub_'||tabla); 
 END
 $func$ LANGUAGE plpgsql;
+
