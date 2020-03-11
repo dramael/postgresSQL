@@ -5,7 +5,7 @@ EXECUTE (
 	delete  from _cartografia.'||tabla||' where ST_Length(geom) < 0.1 and fechamod = ''today'';
 	delete  from _cartografia.'||tabla||' where ST_Length(geom) is null and fechamod = ''today'';
 	update _cartografia.'||tabla||' set calle2 = concat (upper(calle),''/'', fromleft, ''/'', toleft, ''/'', fromright, ''/'', toright)
-	where calle2 is null and fechamod = ''today'';
+	where calle2 is null or calle2 <> concat (upper(calle),''/'', fromleft, ''/'', toleft, ''/'', fromright, ''/'', toright);
 	UPDATE _cartografia.'||tabla||' SET CALLE3 = NULL WHERE LENGTH(CALLE3)<1;
 	update _cartografia.'||tabla||'
 	set calle3 = upper (calle3)
