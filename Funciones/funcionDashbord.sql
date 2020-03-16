@@ -354,7 +354,7 @@ EXECUTE (
 				f.CALLE IS NOT NULL 
 								and (f.fromleft+f.toleft) <> 0 and (f.fromright+f.toright) = 0
 				order by e.localidad, e.calle))x;
-
+	select test.frecuencia('''||tabla||''');
 	drop table if exists test.d'||tabla);
 RETURN query execute ('
 	select tipo, count(*)::int as cantidad from  test.dashbord_'||tabla||' 	group by tipo');
