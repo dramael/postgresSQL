@@ -17,7 +17,7 @@ EXECUTE (
 				or 		(toleft > toright and (fromright+toright) <>0)
 				or 		(toleft+1 <> toright or fromleft+1 <> fromright)
 				and 	(fromleft+toleft) <> 0
-				and 	(fromright -1 <> fromleft and (fromright+toright) <>0)
+				and 	(fromright+toright) <>0
 			union
 				select st_buffer(geom,10) as geom , calle::text, fromleft::int, toleft::int,fromright::int, toright::int, localidad::text, ''frecuencia''::text as tipo from test.d'||tabla|| '
 				where 	(("check" <> ''FALSO'' or "check" is null) AND (CALLE IS NOT NULL) AND (((fromleft+toleft) <> 0 AND (fromright+toright) = 0) OR ((fromright+toright) <> 0 AND (fromleft+toleft) = 0)))
