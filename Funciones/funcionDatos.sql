@@ -101,26 +101,15 @@ EXECUTE (
 	update _cartografia.'||tabla||' set CALLE3 = replace(CALLE3 , ''º'','''')				where CALLE3 like ''%º%'' AND fechamod = ''today''; 
 	update _cartografia.'||tabla||' set contnombre2 = 0 where contnombre2 is null and fechamod = ''today'';
 	update _cartografia.'||tabla||' set contnombre = 0 where contnombre is null and fechamod = ''today'';
+
 	UPDATE _cartografia.'||tabla||' a
-	SET localidad = upper(b.localidad) 
+	SET localidad = upper(b.localidad),
+	partido = upper (b.partido), 
+	provincia = upper(b.provincia)
 	FROM capas_gral.localidades b
-	WHERE ST_WITHIN(st_centroid(a.geom), b.geom) and a.fechamod = ''today'';
-	UPDATE _cartografia.'||tabla||' a
-	SET partido = upper(b.partido) 
-	FROM capas_gral.localidades b
-	WHERE ST_WITHIN(st_centroid(a.geom), b.geom) and a.fechamod = ''today'';
-	UPDATE _cartografia.'||tabla||' a
-	SET partido = upper(b.partido) 
-	FROM capas_gral.departamento b
-	WHERE ST_WITHIN(st_centroid(a.geom), b.geom) and a.localidad is null and a.fechamod = ''today'';
-	UPDATE _cartografia.'||tabla||' a
-	SET provincia = upper(b.provincia) 
-	FROM capas_gral.provincia b
-	WHERE ST_WITHIN(st_centroid(a.geom), b.geom) and a.fechamod = ''today'';
-	UPDATE _cartografia.'||tabla||' a
-	set barrio = upper(b.barrio)
-	from capas_gral.barrios b
-	where sT_WITHIN(st_centroid(a.geom), b.geom) and a.fechamod = ''today'' and a.barrio is null;
+	WHERE ST_WITHIN(st_centroid(a.geom), b.geom) and ((a.fechamod = ''today'') or 
+	(a.partido is null or a.provincia is null or a.localidad is null));
+	
 	update _cartografia.'||tabla||' set fromleft = 0 where "check" = ''FALSO'';
 	update _cartografia.'||tabla||' set TOLEFT = 0 where "check" = ''FALSO'';
 	update _cartografia.'||tabla||' set FROMRIGHT = 0 where "check" = ''FALSO'';
