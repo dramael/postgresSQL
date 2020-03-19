@@ -148,7 +148,7 @@ EXECUTE (
 			having count (concat(st_astext(geom), calle, tipo)) <> 1)x
 		union -- nombre
 			select null::geometry(polygon,5347) geom,
-			concat( ''"calle"= '', k ,acalle,k,'' or "calle"=  '',k, bcalle ,k,'' and "localidad" =  '',k, f.localidad,k) as calle, 
+			concat( ''("calle"= '', k ,acalle,k,'' or "calle"=  '',k, bcalle ,k,'' ) and "localidad" =  '',k, f.localidad,k) as calle, 
 			null::int as fromleft, null::int as toleft, null::int as fromright, null::int as toright,
 			null::text as localidad, ''nombre''::text as tipo
 			from test.d'||tabla|| '   a
@@ -190,7 +190,7 @@ EXECUTE (
 		union -- subdividos
 			select st_buffer(geom,10) as geom, calle::text, null::int as fromleft, null::int as toleft, null::int as fromright, null::int as toright,  null::text as localidad,''subdividido''::text as tipo
 			from test.sub_'||tabla||'
-		union -- duplicadas d'||tabla||' 
+		union -- duplicadas  
 			select st_buffer(geom,15) as geom , calle::text,fromleft::int, toleft::int,fromright::int, toright::int, localidad::text, ''callesduplicadas''::text as tipo from (
 				select st_buffer((st_dump(st_union (geom))).geom,15) as geom,localidad, calle, fromleft,toleft,fromright,toright from 
 					(select geom, localidad, calle, fromleft, toleft,fromright, toright from 
