@@ -363,9 +363,9 @@ inconexos as (
 				where a.calle = b.calle and a.calle = c.calle
 				and b.fromleft < c.fromleft and a.fromleft <> b.toright+1 and a.toright+1 <> c.fromleft
 				and a.id <> b.id and a.id <> c.id
-				and ((a.fromleft+a.toleft+a.fromright+a.toright <>0) and
-					 (b.fromleft+b.toleft+b.fromright+b.toright <>0) and
-					 (c.fromleft+c.toleft+c.fromright+c.toright <>0))
+				and (a.fromleft+a.toleft) <> 0 and (a.fromright+a.toright) <>0 and
+					 (b.fromleft+b.toleft) <> 0 and (b.fromright+b.toright) <> 0 and
+					 (c.fromleft+c.toleft)<> 0 and (c.fromright+c.toright) <>0
 			) and (fromleft+toleft) <> 0 and (fromright+toright) <>0
 			and concat(calle, fromleft,toleft,fromright,toright,localidad) not in (
 			select concat(calle, fromleft,toleft,fromright,toright,localidad) from callesduplicadas
