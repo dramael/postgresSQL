@@ -59,7 +59,7 @@ EXECUTE (
             and a.id = b.id
             order by id) ,
             upd1 as 
-                (update _cartografia.bsas_lamatanza a set fromleft = b.fromleft,
+                (update _cartografia.'||tabla||' a set fromleft = b.fromleft,
                 toleft = b.toleft,
                 fromright = b.fromright,
                 toright = b.toright
@@ -77,7 +77,7 @@ EXECUTE (
                 from frec2) b
                 where a.id = b.id and a.fromleft <> 0 and a.toleft <> 0 and a.fromright <> 0 and a.toright <> 0),
             upd2 as (
-                update _cartografia.bsas_lamatanza a set 	fromleft = b.fromleft,
+                update _cartografia.'||tabla||' a set 	fromleft = b.fromleft,
                 toleft = b.toleft
                 from(
                 select id, "from" as fromleft ,
@@ -88,7 +88,7 @@ EXECUTE (
                 from frec2) b
                 where a.id = b.id and a.fromleft <> 0 and a.toleft <> 0 and (a.fromright + a.toright) = 0), 
             upd3 as (
-                update _cartografia.bsas_lamatanza a set 	fromright = b.fromright,
+                update _cartografia.'||tabla||' a set 	fromright = b.fromright,
                 toright = b.toright
                 from(
                 select id, "from" as fromright ,
