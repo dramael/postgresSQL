@@ -10,6 +10,7 @@ EXECUTE (
                                         osm = null,						
                                         "check" = null;
 
+
 update _cartografia.'||tabla||' set google = 1 where id in (select A.ID from _cartografia.'||tabla||' a 
     inner join varios.inverse_geocode_google b on st_intersects (st_buffer(a.geom,10), st_transform(b.geom,5347)) 
     where 
@@ -48,7 +49,33 @@ update _cartografia.'||tabla||' set osm = 1 where id in (select A.ID from _carto
         AND (SIMILARITY (A.CALLE, B.calle) > 0.2
             or string_to_array(a.calle, '' '', '''') && string_to_array(b.calle, '' '', '''')));
 
-update _cartografia.'||tabla||' set osm = 0 where osm is null;'
+update _cartografia.'||tabla||' set osm = 0 where osm is null;
+
+update _cartografia.'||tabla||' set "check" = ''OK'', fuente = ''google/osm/here'' WHERE google+here+osm = 3;
+update _cartografia.'||tabla||' set "check" = ''OK'', fuente = ''google/osm'' WHERE google+osm = 2 and here = 0;
+update _cartografia.'||tabla||' set "check" = ''OK'', fuente = ''google/here'' WHERE google+here = 2 and osm = 0;
+update _cartografia.'||tabla||' set "check" = ''OK'', fuente = ''here/osm'' WHERE osm+here = 2 and google = 0;
+update _cartografia.'||tabla||' set "check" = ''OK'', fuente = ''google'' WHERE google = 1 and here+osm = 0;
+update _cartografia.'||tabla||' set "check" = ''OK'', fuente = ''osm'' WHERE osm = 1 and google+here = 0;
+update _cartografia.'||tabla||' set "check" = ''OK'', fuente = ''here'' WHERE here = 1 and google+osm = 0;
+
+update _cartografia.'||tabla||' set "check" = ''OK'',	
+    fuente = ''adyacentes''
+    where id in (
+    select a.id from _cartografia.'||tabla||' a
+    inner join _cartografia.'||tabla||' b on st_intersects (a.geom,b.geom)
+    where a.id <> b.id and a.calle = b.calle
+    and a."check" is null
+    and b."check" = ''OK''
+    and (a.fromleft+a.toleft+a.toright+a.fromright) <>0
+    group by a.id
+    having count (b.id) >1
+    order by a.id)
+
+
+
+
+'
 		
 )
 ;
