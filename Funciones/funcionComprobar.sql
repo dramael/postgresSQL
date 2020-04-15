@@ -70,13 +70,36 @@ update _cartografia.'||tabla||' set "check" = ''OK'',
     and (a.fromleft+a.toleft+a.toright+a.fromright) <>0
     group by a.id
     having count (b.id) >1
-    order by a.id)
+    order by a.id);
+
+with comprobar as (
+select a.id,a.calle, 
+string_to_array(string_agg(DISTINCT(b.calle), '','' order by b.calle),'','','''') inter , 
+a.fromleft, a.toleft, a.fromright, a.toright, a.localidad,a."check"
+	from 		_Cartografia.'||tabla||' a
+	inner join _cartografia.'||tabla||' b 
+on st_intersects (a.geom, b.geom)
+where a.calle <> b.calle and a.id <> b.id
+group by a.id,a.calle,a.fromleft, a.toleft, a.fromright, a.toright, a.localidad, a."check" 
+), 
+comprobado as (select inter, localidad,fromleft,toleft,fromright,toright from comprobar 
+			   where "check" = ''OK'' and array_length(inter, 1) = 2 
+			   group by inter, localidad,fromleft,toleft,fromright,toright),
+unsegmento as (SELECT inter, localidad, string_agg(concat(fromleft,'','',toleft,'','',fromright,'','',toright)::text,'','') alturas FROM COMPROBADO group by inter,localidad having count (inter) = 1),
+sindato as (select * from comprobar where "check" is null),
+paralelos as (select a.id from sindato a
+inner join unsegmento b on a.inter = b.inter
+where a."check" is null
+and a.localidad = b.localidad
+and a.fromleft::text = split_part(alturas,'','',1)
+and a.toleft::text = split_part(alturas,'','',2)
+and a.fromright::text = split_part(alturas,'','',3)
+and a.toright::text = split_part(alturas,'','',4))
+update _cartografia.'||tabla||' set "check" = ''OK'', fuente = ''paralelos''
+where id in (select id from paralelos)'
 
 
-
-
-'
-		
+ 	
 )
 ;
 RETURN query execute ('select count(*)::int as cantidad from _cartografia.'||tabla||' where (osm+here+google) <> 0;')
