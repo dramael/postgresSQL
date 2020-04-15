@@ -103,7 +103,7 @@ with
  	
 )
 ;
-RETURN query execute ('select count(*)::int as cantidad from _cartografia.'||tabla||' where (osm+here+google) <> 0;')
+RETURN query execute ('select count(*)::int as cantidad from _cartografia.'||tabla||' where fuente is null;')
 ;
 
 END
