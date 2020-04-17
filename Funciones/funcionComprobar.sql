@@ -19,7 +19,7 @@ update _cartografia.'||tabla||' set google = 1 where id in (select A.ID from _ca
         and a.calle is not null
         and b.altura <> 0
         and isnumeric(right(b.calle,1)) = ''true'' 
-        and altura between fromleft and toright
+        and (altura between fromleft and toleft or altura between fromright and toright)
         AND (SIMILARITY (A.CALLE, B.NOMBRE) > 0.2
             or string_to_array(a.calle, '' '', '''') && string_to_array(b.nombre, '' '', '''')));
 		
@@ -32,7 +32,7 @@ update _cartografia.'||tabla||' set here = 1 where id in (select A.ID from _cart
         and a.calle is not null
         and b.altura <> 0
         and isnumeric(right(b.direccion1,1)) = ''true'' 
-        and altura between fromleft and toright
+       and (altura between fromleft and toleft or altura between fromright and toright)
         AND (SIMILARITY (A.CALLE, B.NOMBRE) > 0.2
             or string_to_array(a.calle, '' '', '''') && string_to_array(b.nombre, '' '', '''')));
 		
@@ -45,7 +45,7 @@ update _cartografia.'||tabla||' set osm = 1 where id in (select A.ID from _carto
         and a.calle is not null
         and b.altura <> 0
         and isnumeric(right(b.calle,1)) = ''true'' 
-        and altura between fromleft and toright
+        and (altura between fromleft and toleft or altura between fromright and toright)
         AND (SIMILARITY (A.CALLE, B.calle) > 0.2
             or string_to_array(a.calle, '' '', '''') && string_to_array(b.calle, '' '', '''')));
 
