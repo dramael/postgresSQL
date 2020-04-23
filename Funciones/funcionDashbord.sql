@@ -366,7 +366,7 @@ inconexos as (
 				and (a.fromleft+a.toleft) <> 0 and (a.fromright+a.toright) <>0 and
 					 (b.fromleft+b.toleft) <> 0 and (b.fromright+b.toright) <> 0 and
 					 (c.fromleft+c.toleft)<> 0 and (c.fromright+c.toright) <>0
-			) and (fromleft+toleft) <> 0 and (fromright+toright) <>0
+			) and (fromleft+toleft) <> 0 and (fromright+toright) <>0 and tcalle is null
 			and concat(calle, fromleft,toleft,fromright,toright,localidad) not in (
 			select concat(calle, fromleft,toleft,fromright,toright,localidad) from callesduplicadas
 			union all select concat(calle, fromleft,toleft,fromright,toright,localidad) from continuidadaltura
