@@ -1,6 +1,6 @@
 -- Comprueba las alturas de los segmentos contra la informacion que se encuentra georeferenciada
 
-CREATE OR REPLACE FUNCTION test.comprobar(tabla varchar(30)) RETURNS TABLE (cantidad int ) AS $func$
+CREATE OR REPLACE FUNCTION test.comprobar(tabla varchar(30)) RETURNS TABLE (cantidad int) AS $func$
 BEGIN
 EXECUTE (
 
@@ -99,8 +99,6 @@ with
         update _cartografia.'||tabla||' set "check" = ''OK'', fuente = ''paralelos''
         where id in (select id from paralelos)'
 
-
- 	
 )
 ;
 RETURN query execute ('select count(*)::int as cantidad from _cartografia.'||tabla||' where fuente is null;')
@@ -109,22 +107,3 @@ RETURN query execute ('select count(*)::int as cantidad from _cartografia.'||tab
 END
 $func$ LANGUAGE plpgsql;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
- 
- 
