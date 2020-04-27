@@ -3,7 +3,7 @@ CREATE OR REPLACE FUNCTION test.dashbord(tabla varchar(30)) RETURNS TABLE (tipo 
 BEGIN
 EXECUTE (
 	'drop table if exists test.d'||tabla||' ;
-	create table if not exists test.d'||tabla||' as select id, geom, calle, fromleft,toleft,fromright, toright,	localidad, contnombre,contnombre2, tcalle, "check" from _cartografia.'||tabla||';
+	create table if not exists test.d'||tabla||' as select id, geom, calle, fromleft,toleft,fromright, toright,	localidad, contnombre, tcalle, "check" from _cartografia.'||tabla||';
 	drop table if exists test.dashbord_'||tabla||';
 	drop table if exists test.sub_'||tabla||';
 	select test.segmentossubdividos('''||tabla||''');
@@ -168,12 +168,12 @@ nombre as
 					select ROW_NUMBER() OVER() ID, c.localidad, acalle,bcalle  from (
 					SELECT a.localidad, a.calle acalle, b.calle bcalle FROM (
 						SELECT LOCALIDAD, CALLE FROM i'||tabla||'  
-						WHERE CALLE IS NOT NULL AND CONTNOMBRE2 = 0
+						WHERE CALLE IS NOT NULL AND CONTNOMBRE = 0
 						GROUP BY 1,2
 					) A
 					INNER JOIN (
 					SELECT LOCALIDAD, CALLE FROM i'||tabla||' 
-					WHERE CALLE IS NOT NULL AND CONTNOMBRE2 = 0
+					WHERE CALLE IS NOT NULL AND CONTNOMBRE = 0
 					GROUP BY 1,2 
 					) B ON A.LOCALIDAD = B.LOCALIDAD 
 					WHERE SIMILARITY(A.CALLE ,B.CALLE) > 0.45

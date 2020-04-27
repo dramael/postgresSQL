@@ -4,7 +4,7 @@ EXECUTE (
 
     'drop table if exists test.f'||tabla||';
         create table if not exists test.f'||tabla||' as 
-        select id, geom, calle, fromleft,toleft,fromright, toright,	localidad, contnombre,contnombre2, tcalle, "check" 
+        select id, geom, calle, fromleft,toleft,fromright, toright,	localidad, contnombre, tcalle, "check" 
         from _cartografia.'||tabla||';	
     with frec as (
             Select a.id,

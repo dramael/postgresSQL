@@ -4,7 +4,7 @@ BEGIN
 EXECUTE (
 	'
 	drop table if exists test.sub_'||tabla||';
-	create table if not exists test.d'||tabla||' as select id, geom, calle, fromleft,toleft,fromright, toright,	localidad, contnombre,contnombre2, tcalle, "check" from _cartografia.'||tabla||';
+	create table if not exists test.d'||tabla||' as select id, geom, calle, fromleft,toleft,fromright, toright,	localidad, contnombre, tcalle, "check" from _cartografia.'||tabla||';
 	create table if not exists test.sub_'||tabla||' as 
 	with calles as (
 		select row_number() over () pk, calles, ids from (select st_union(geom) as geom, string_agg(calle,'',''order by calle desc)calles, 

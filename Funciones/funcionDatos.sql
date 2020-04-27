@@ -99,7 +99,6 @@ EXECUTE (
 	update _cartografia.'||tabla||' set calle3 = replace(calle3 , ''À'',''O'')				where calle3 like ''%À%'' and fechamod = ''today'';  
 	update _cartografia.'||tabla||' set calle3 = replace(calle3 , ''Ú'',''U'')				where calle3 like ''%Ú%'' and fechamod = ''today''; 
 	update _cartografia.'||tabla||' set CALLE3 = replace(CALLE3 , ''º'','''')				where CALLE3 like ''%º%'' AND fechamod = ''today''; 
-	update _cartografia.'||tabla||' set contnombre2 = 0 where contnombre2 is null and fechamod = ''today'';
 	update _cartografia.'||tabla||' set contnombre = 0 where contnombre is null and fechamod = ''today'';
 
 	UPDATE _cartografia.'||tabla||' a

@@ -1,7 +1,7 @@
 CREATE OR REPLACE FUNCTION test.blvd(tabla varchar(30)) RETURNS TABLE (cantidad int) AS $func$
 BEGIN
 EXECUTE (
-'create table if not exists test.i'||tabla||' as select id, geom, calle, fromleft,toleft,fromright, toright, localidad, contnombre,contnombre2, tcalle, "check" from _cartografia.'||tabla||';
+'create table if not exists test.i'||tabla||' as select id, geom, calle, fromleft,toleft,fromright, toright, localidad, contnombre, tcalle, "check" from _cartografia.'||tabla||';
 create table if not exists test.b'||tabla||'  as
     with blvd as (
         select row_number() over () pk, geom,calle,localidad from test.i'||tabla||' 
