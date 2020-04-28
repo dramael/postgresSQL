@@ -108,6 +108,10 @@ EXECUTE (
 	FROM capas_gral.localidades b
 	WHERE ST_WITHIN(st_centroid(a.geom), b.geom) and ((a.fechamod = ''today'') or 
 	(a.partido is null or a.provincia is null or a.localidad is null));
+
+	update _cartografia.'||tabla||' set callesdup = 0 where callesdup is null and fechamod = ''today'';
+	update _cartografia.'||tabla||' set contalt = 0 where contalt is null and fechamod = ''today'';
+	update _cartografia.'||tabla||' set inconexos = 0 where inconexos is null and fechamod = ''today'';
 	
 	update _cartografia.'||tabla||' set fromleft = 0 where "check" = ''FALSO'';
 	update _cartografia.'||tabla||' set TOLEFT = 0 where "check" = ''FALSO'';

@@ -29,7 +29,7 @@ frecuencia as (
 callesduplicadas as 
 			(select 	st_buffer((st_dump(st_union (geom))).geom,5) as geom,calle, fromleft, toleft,fromright, toright, localidad, ''callesduplicadas'' as tipo from (
 				select st_union(geom) as geom,localidad, calle, fromleft,toleft,fromright,toright from i'||tabla||'
-				where (fromleft+toleft+fromright+toright) <>0 AND CALLE IS NOT NULL
+				where (fromleft+toleft+fromright+toright) <>0 AND CALLE IS NOT NULL and callesdup = 0
 				group by localidad, calle, fromleft, toleft, fromright, toright
 				having count (*) <> 1
 				union
@@ -38,7 +38,7 @@ callesduplicadas as
 					select localidad, calle,ind from (
 						select localidad, calle, generate_series(min, max) ind from (
 							select id, localidad, calle,min(fromleft)min, max(toright)max from i'||tabla||'
-						where (fromleft+toleft+fromright+toright) <>0 AND CALLE IS NOT NULL and tcalle is null
+						where (fromleft+toleft+fromright+toright) <>0 AND CALLE IS NOT NULL and callesdup = 0
 						and (fromleft+toleft) <> 0 and (fromright+toright) <>0
 						group by localidad,id, calle
 						) x
@@ -57,7 +57,7 @@ continuidadaltura as (
 							select localidad, calle, generate_series(min, max) ind from (
 							select localidad, calle,
 							min(fromleft)min, max(toright)max from i'||tabla||'
-							where (fromleft+toleft+fromright+toright) <>0 AND CALLE IS NOT NULL and tcalle is null
+							where (fromleft+toleft+fromright+toright) <>0 AND CALLE IS NOT NULL and contalt = 0
 							and (fromleft+toleft) <> 0 and (fromright+toright) <>0
 							group by localidad, calle) b
 							order by 1,2) a
@@ -65,7 +65,7 @@ continuidadaltura as (
 					on (a.localidad = b.localidad and a.calle = b.calle and b.ind BETWEEN a.fromleft and a.toright)
 					where id is null 
 				) b on a.localidad = b.localidad and a.calle = b.calle
-				and ((a.fromleft+a.toleft+a.fromright+a.toright) <>0 AND a.CALLE IS NOT NULL and a.tcalle is null
+				and ((a.fromleft+a.toleft+a.fromright+a.toright) <>0 AND a.CALLE IS NOT NULL  and contalt = 0
 						and (a.fromleft+a.toleft) <> 0 and (a.fromright+a.toright) <>0
 				and a.toright+1 = b.ind) 
 				union
@@ -78,7 +78,7 @@ continuidadaltura as (
 							select localidad, calle, generate_series(min, max) ind from (
 							select localidad, calle,
 							min(fromleft)min, max(toright)max from i'||tabla||'  
-							where (fromleft+toleft+fromright+toright) <>0 AND CALLE IS NOT NULL and tcalle is null
+							where (fromleft+toleft+fromright+toright) <>0 AND CALLE IS NOT NULL  and contalt = 0
 							and (fromleft+toleft) <> 0 and (fromright+toright) <>0
 							group by localidad, calle) b
 							order by 1,2) a
@@ -96,7 +96,7 @@ continuidadaltura as (
 							select localidad, calle, generate_series(min, max) ind from (
 							select localidad, calle,
 							min(fromleft)min, max(toright)max from i'||tabla||'
-							where (fromleft+toleft+fromright+toright) <>0 AND CALLE IS NOT NULL and tcalle is null
+							where (fromleft+toleft+fromright+toright) <>0 AND CALLE IS NOT NULL and contalt = 0
 							and (fromleft+toleft) <> 0 and (fromright+toright) <>0
 							group by localidad, calle) b
 			) a group by localidad, calle
@@ -108,7 +108,7 @@ continuidadaltura as (
 			i'||tabla||' f on st_intersects (e.geom, f.geom)
 			where e.localidad =  f.localidad and e.calle = f.calle and e.id <> f.id
 			and e.toright +1 <> f.fromleft AND F.TORIGHT+1 <> E.FROMLEFT
-			and (f.fromleft+f.toleft+f.fromright+f.toright) <>0 AND f.CALLE IS NOT NULL and f.tcalle is null
+			and (f.fromleft+f.toleft+f.fromright+f.toright) <>0 AND f.CALLE IS NOT NULL and contalt = 0
 							and (f.fromleft+f.toleft) <> 0 and (f.fromright+f.toright) <>0),
 nodos as 
 			(select geom,null::text as calle, null::int as fromleft, null::int as toleft, null::int as fromright, null::int as toright,

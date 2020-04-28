@@ -131,6 +131,10 @@ EXECUTE (
     where st_within (st_centroid(st_transform(a.geom,4326)), st_transform(b.geom,4326)) and a.comin is  null and a.fechamod ::date = ''today'';
     update capas_gral.comisaria_cuadricula_argentina set cria = comin
     where cria is  null and fechamod ::date = ''today'';
+
+    update capas_gral.bomberos_jurisdicciones_argentina a set simple = b.simple
+    from (select id,(st_dump(st_transform(geom,4326))).geom as simple from capas_gral.bomberos_jurisdicciones_argentina) b
+    where a.id = b.id;
                     
     create table test.general as select id, (st_dump(st_transform(geom,4326))).geom as "simple" from 
     capas_gral.comisaria_zona_argentina
