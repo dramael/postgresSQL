@@ -135,6 +135,10 @@ EXECUTE (
     update capas_gral.bomberos_jurisdicciones_argentina a set simple = b.simple
     from (select id,(st_dump(st_transform(geom,4326))).geom as simple from capas_gral.bomberos_jurisdicciones_argentina) b
     where a.id = b.id;
+    
+    update capas_gral.bomberos_jurisdicciones_argentina a set division = upper(division);
+    update capas_gral.bomberos_jurisdicciones_argentina a set nombre = upper(nombre);
+    update capas_gral.bomberos_jurisdicciones_argentina a set tipo = upper(tipo);
                     
     create table test.general as select id, (st_dump(st_transform(geom,4326))).geom as "simple" from 
     capas_gral.comisaria_zona_argentina
