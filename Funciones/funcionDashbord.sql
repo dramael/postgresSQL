@@ -139,10 +139,10 @@ sentido as
 				null::text as localidad,''sentido''::text as tipo from (
 			select st_buffer(st_union(geom),10) as geom, calle, tipo from  (
 				select ST_StartPoint ((st_dump(geom)).geom) as geom, calle, ''inicio'' as tipo from i'||tabla||'  
-				where tcalle is null
+				where sentido is null
 				union all
 				select ST_EndPoint ((st_dump(geom)).geom) as geom, calle, ''fin'' as tipo from i'||tabla||'  
-				where tcalle is null
+				where sentido is null
 				order by 1,2,3)x
 			where calle is not null
 			group by st_astext(geom), calle, tipo
