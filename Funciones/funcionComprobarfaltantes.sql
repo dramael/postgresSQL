@@ -85,6 +85,13 @@ where fromleft+toleft+fromright+toright  = 0 and calle is null and "check" is nu
 
 UPDATE _cartografia.'||tabla||' set "check" = ''NOMBRE''
 where fromleft+toleft+fromright+toright  = 0 and calle is not null and "check" is null;
+
+UPDATE _cartografia.'||tabla||' set "check" = ''?''
+where fromleft+toleft+fromright+toright  <> 0 and calle is not null and "check" is null;
+
+
+
+drop table if exists test.singeo'||tabla||' ;
 '
 
 )

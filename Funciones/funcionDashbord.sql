@@ -374,7 +374,11 @@ inconexos as (
 	select * from frecuencia union all select * from callesduplicadas union all select * from continuidadaltura union all select * from nodos 
 	union all select * from sentido union all select * from nombre union  select * from subdivididos union select * from continuidadaltura2 union select * from inconexos;
 
+	select test.nodos('''||tabla||''');
 	select test.frecuencia('''||tabla||''');
+	insert into test.dashbord_'||tabla||' (geom, calle, tipo) select geom, calle, ''interseccion'' as tipo from test.nodos_'||tabla||';
+	drop table if exists test.nodos_'||tabla||';
+	drop table if exists test.sub_'||tabla||';
 	drop table if exists test.d'||tabla);
 RETURN query execute ('
 	select tipo, count(*)::int as cantidad from  test.dashbord_'||tabla||' 	group by tipo');
