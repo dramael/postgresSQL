@@ -134,6 +134,19 @@ nodos as
 				)a 
 				)c where round(st_area(geom)) <> 12 
 			) x)z),
+nodosp as
+	(select ST_StartPoint ((st_dump(geom)).geom) as geom from i'||tabla||' 
+	union
+	select ST_EndPoint ((st_dump(geom)).geom) as geom from i'||tabla||' ),
+		nodos2 as	 
+			(select a.geom, min (st_distance (a.geom, b.geom)) as dist from nodosp a 
+			inner join nodosp b on st_astext (a.geom) <> st_astext (b.geom)
+			group by a.geom order by dist ),
+			nodos3 as 
+				(select (
+					st_dump(st_union(st_buffer(geom, 10)))).geom as geom,null::text as calle, null::int as fromleft, null::int as toleft,null::int as fromright,
+				null::int as toright,null::text as localidad,''nodos2''::text as tipo
+				from nodos2 where dist < 5), 
 sentido as
 			(select geom, calle::text, null::int as fromleft, null::int as toleft, null::int as fromright, null::int as toright,
 				null::text as localidad,''sentido''::text as tipo from (
@@ -371,8 +384,25 @@ inconexos as (
 			select concat(calle, fromleft,toleft,fromright,toright,localidad) from callesduplicadas
 			union all select concat(calle, fromleft,toleft,fromright,toright,localidad) from continuidadaltura
 			union all select concat(calle, fromleft,toleft,fromright,toright,localidad) from continuidadaltura2)) 
-	select * from frecuencia union all select * from callesduplicadas union all select * from continuidadaltura union all select * from nodos 
-	union all select * from sentido union all select * from nombre union  select * from subdivididos union select * from continuidadaltura2 union select * from inconexos;
+	select * from frecuencia
+	union all 
+	select * from callesduplicadas 
+	union all 
+	select * from continuidadaltura 
+	union all 
+	select * from nodos 
+	union all 
+	select * from sentido 
+	union all 
+	select * from nombre 
+	union all
+	select * from subdivididos 
+	union all 
+	select * from continuidadaltura2 
+	union all 
+	select * from inconexos 
+	union all 
+	select * from nodos3;
 
 	select test.nodos('''||tabla||''');
 	select test.frecuencia('''||tabla||''');

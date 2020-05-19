@@ -99,7 +99,7 @@ EXECUTE (
 	update _cartografia.'||tabla||' set calle3 = replace(calle3 , ''À'',''O'')				where calle3 like ''%À%'' and fechamod = ''today'';  
 	update _cartografia.'||tabla||' set calle3 = replace(calle3 , ''Ú'',''U'')				where calle3 like ''%Ú%'' and fechamod = ''today''; 
 	update _cartografia.'||tabla||' set CALLE3 = replace(CALLE3 , ''º'','''')				where CALLE3 like ''%º%'' AND fechamod = ''today''; 
-	update _cartografia.'||tabla||' set contnombre = 0 where contnombre is null and fechamod = ''today'';
+	
 
 	UPDATE _cartografia.'||tabla||' a
 	SET localidad = upper(b.localidad),
@@ -112,6 +112,8 @@ EXECUTE (
 	update _cartografia.'||tabla||' set callesdup = 0 where callesdup is null and fechamod = ''today'';
 	update _cartografia.'||tabla||' set contalt = 0 where contalt is null and fechamod = ''today'';
 	update _cartografia.'||tabla||' set inconexos = 0 where inconexos is null and fechamod = ''today'';
+	update _cartografia.'||tabla||' set sentido = 0 where sentido is null and fechamod = ''today'';
+	update _cartografia.'||tabla||' set contnombre = 0 where contnombre is null and fechamod = ''today'';
 	
 	update _cartografia.'||tabla||' set fromleft = 0 where "check" = ''FALSO'';
 	update _cartografia.'||tabla||' set TOLEFT = 0 where "check" = ''FALSO'';
