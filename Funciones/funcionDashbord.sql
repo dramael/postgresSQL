@@ -148,18 +148,30 @@ nodosp as
 				null::int as toright,null::text as localidad,''nodos2''::text as tipo
 				from nodos2 where dist < 5), 
 sentido as
-			(select geom, calle::text, null::int as fromleft, null::int as toleft, null::int as fromright, null::int as toright,
-				null::text as localidad,''sentido''::text as tipo from (
-			select st_buffer(st_union(geom),10) as geom, calle, tipo from  (
+			(
+				
 				select ST_StartPoint ((st_dump(geom)).geom) as geom, calle, ''inicio'' as tipo from i'||tabla||'  
-				where sentido is null
-				union all
-				select ST_EndPoint ((st_dump(geom)).geom) as geom, calle, ''fin'' as tipo from i'||tabla||'  
-				where sentido is null
-				order by 1,2,3)x
-			where calle is not null
-			group by st_astext(geom), calle, tipo
-			having count (concat(st_astext(geom), calle, tipo)) <> 1)x),
+	where tcalle is null and calle is not null
+	union all
+	select ST_EndPoint ((st_dump(geom)).geom) as geom, calle, ''fin'' as tipo from i'||tabla||' 
+	where tcalle is null and calle is not null
+	order by 1,2,3),
+
+sentido2 as 
+	(select geom, calle from sentido
+	group by geom, calle
+	having count (concat(st_astext(geom), calle)) =2),
+
+sentido3 as 
+	(select geom, calle::text, null::int as fromleft, null::int as toleft, null::int as fromright, null::int as toright,
+				null::text as localidad,''sentido''::text as tipo from (
+	(select st_buffer(st_union(geom),10) as geom, calle, tipo from sentido
+	 where st_astext (geom) in (select st_astext (geom) from sentido2)
+	group by geom, calle, tipo
+	having count (concat(st_astext(geom), calle, tipo)) <> 1))x
+			
+			
+			),
 nombre as
 			(select null::geometry(polygon,5347) geom,
 			concat( ''("calle"= '', k ,acalle,k,'' or "calle"=  '',k, bcalle ,k,'' ) and "localidad" =  '',k, f.localidad,k) as calle, 
@@ -392,7 +404,7 @@ inconexos as (
 	union all 
 	select * from nodos 
 	union all 
-	select * from sentido 
+	select * from sentido3
 	union all 
 	select * from nombre 
 	union all
