@@ -110,43 +110,45 @@ continuidadaltura as (
 			and e.toright +1 <> f.fromleft AND F.TORIGHT+1 <> E.FROMLEFT
 			and (f.fromleft+f.toleft+f.fromright+f.toright) <>0 AND f.CALLE IS NOT NULL and contalt = 0
 							and (f.fromleft+f.toleft) <> 0 and (f.fromright+f.toright) <>0),
-nodos as 
-			(select geom,null::text as calle, null::int as fromleft, null::int as toleft, null::int as fromright, null::int as toright,
-				null::text as localidad, ''nodos''::text as tipo from (select (st_dump(st_union(geom))).geom as geom from (
-				select geom
-				from (
-					select distinct (b.ids)ids , b.geom from (
-						select st_union(st_buffer(geom,15)) geom, string_agg(distinct (id)::text,''/'') as ids from (
-							select ST_StartPoint ((st_dump(geom)).geom) as geom,id::text, ''inicial'' as tipo from i'||tabla||' 
-							union
-							select ST_EndPoint ((st_dump(geom)).geom) as geom,id::text, ''final'' as tipo from i'||tabla||' 
-							union
-							select (st_dumppoints(ST_Intersection (a.geom, a.geom))).geom as geom,id::text,''inter'' as tipo from i'||tabla||' a 
-						) a 
-					group by st_astext(geom)
-					having count (st_astext(geom)) between  2 and 3) b 
-				inner join i'||tabla||' c on st_intersects (b.geom, c.geom)
-				where ids <> id::text) d
-				union
-			select geom from (
-				select (st_dump(st_union(geom))).geom as geom from (
-					select st_buffer((st_dumppoints(ST_Intersection (a.geom, a.geom))).geom,2) as geom from i'||tabla||' a 
-				)a 
-				)c where round(st_area(geom)) <> 12 
-			) x)z),
-nodosp as
-	(select ST_StartPoint ((st_dump(geom)).geom) as geom from i'||tabla||' 
+base as 
+			(select geom,id from i'||tabla||'),
+		nodos as
+			(select ST_StartPoint ((st_dump(geom)).geom) as geom,id::text from base 
+			union all
+			select ST_EndPoint ((st_dump(geom)).geom) as geom,id::text from base),
+		bnodos as 
+			(select st_buffer(geom,5) as geom from nodos),
+		cantvectores as 
+			(select a.geom, count(distinct(b.id)) cantvectores from bnodos a
+			inner join base b on st_intersects (a.geom, b.geom)
+			group by a.geom),
+		cantnodos as (
+			select geom, count (geom) as cantnodos from bnodos
+			group by 1),
+		nodossalida as (
+			select (st_dump(st_union(geom))).geom from (
+			SELECT a.*, cantnodos from cantvectores a
+			inner join cantnodos b on st_astext(a.geom) = st_astext(b.geom))x 
+			where cantnodos<>cantvectores),
+		nodosbuf as (select * from(select (st_dump(st_union(geom))).geom from bnodos)x
+						 where round(st_area(geom)) <> 78),
+	primera as (
+	select geom from (select * from nodossalida
 	union
-	select ST_EndPoint ((st_dump(geom)).geom) as geom from i'||tabla||' ),
-		nodos2 as	 
-			(select a.geom, min (st_distance (a.geom, b.geom)) as dist from nodosp a 
-			inner join nodosp b on st_astext (a.geom) <> st_astext (b.geom)
-			group by a.geom order by dist ),
-			nodos3 as 
-				(select (
-					st_dump(st_union(st_buffer(geom, 10)))).geom as geom,null::text as calle, null::int as fromleft, null::int as toleft,null::int as fromright,
-				null::int as toright,null::text as localidad,''nodos2''::text as tipo
-				from nodos2 where dist < 5), 
+	select * from nodosbuf)x),
+		inter as (
+			select (st_dumppoints(ST_Intersection (a.geom, b.geom))).geom as geom
+			from base a
+			inner join base b on st_intersects(a.geom, b.geom)
+			where a.id <> b.id ),
+	segunda as
+	(select st_buffer(geom,5) from (select geom from inter
+	except
+	select geom from nodos)x),
+snodos as (
+	select distinct (geom), null::text as calle, null::int as fromleft, null::int as toleft, null::int as fromright, null::int as toright,
+					null::text as localidad,''nodos''::text as tipo  from (select * from primera union select * from segunda) x),
+
 sentido as
 			(
 				
@@ -168,10 +170,7 @@ sentido3 as
 	(select st_buffer(st_union(geom),10) as geom, calle, tipo from sentido
 	 where st_astext (geom) in (select st_astext (geom) from sentido2)
 	group by geom, calle, tipo
-	having count (concat(st_astext(geom), calle, tipo)) <> 1))x
-			
-			
-			),
+	having count (concat(st_astext(geom), calle, tipo)) <> 1))x),
 nombre as
 			(select null::geometry(polygon,5347) geom,
 			concat( ''("calle"= '', k ,acalle,k,'' or "calle"=  '',k, bcalle ,k,'' ) and "localidad" =  '',k, f.localidad,k) as calle, 
@@ -402,7 +401,7 @@ inconexos as (
 	union all 
 	select * from continuidadaltura 
 	union all 
-	select * from nodos 
+	select * from snodos 
 	union all 
 	select * from sentido3
 	union all 
@@ -412,13 +411,10 @@ inconexos as (
 	union all 
 	select * from continuidadaltura2 
 	union all 
-	select * from inconexos 
-	union all 
-	select * from nodos3;
+	select * from inconexos ;
+
 
 	select test.nodos('''||tabla||''');
-	select test.frecuencia('''||tabla||''');
-	insert into test.dashbord_'||tabla||' (geom, calle, tipo) select geom, calle, ''interseccion'' as tipo from test.nodos_'||tabla||';
 	drop table if exists test.nodos_'||tabla||';
 	drop table if exists test.sub_'||tabla||';
 	drop table if exists test.d'||tabla);
