@@ -106,41 +106,7 @@ EXECUTE (
     update capas_gral.comisaria_circunscripciones_argentina set circunscri = upper (circunscri) where fechamod::date = ''today'';
 
     update capas_gral.comisaria_circunscripciones_argentina set descripcio = upper (descripcio) where fechamod::date = ''today'';
-                                                                                                                        
-    create table test.general as select id, (st_dump(st_transform(geom,4326))).geom as "simple" from 
-    capas_gral.comisaria_cuadricula_argentina
-    where fechamod ::date = ''today'';
-    update capas_gral.comisaria_cuadricula_argentina a 
-    set "simple" = b."simple"
-    from test.general b
-    where a.id = b.id
-    and a.fechamod ::date = ''today'';
-    drop table test.general;
 
-    update capas_gral.comisaria_cuadricula_argentina set cliente = upper(cliente) where fechamod ::date = ''today'';
-
-    update capas_gral.comisaria_cuadricula_argentina set comin = upper(comin) where fechamod ::date = ''today'';
-    
-    update capas_gral.comisaria_cuadricula_argentina a set localidad = b.localidad
-    from capas_gral.localidades b
-    where st_within (st_centroid(a.geom),b.geom) and a.localidad is null and a.fechamod ::date = ''today'';
-    
-    update capas_gral.comisaria_cuadricula_argentina a set partido = b.partido
-    from capas_gral.departamento b
-    where st_within (st_centroid(a.geom),b.geom) and a.fechamod ::date = ''today'';
-    
-    update capas_gral.comisaria_cuadricula_argentina a set provincia = upper(b.provincia)
-    from capas_gral.provincia b
-    where st_within (st_centroid(a.geom), b.geom) and a.fechamod ::date = ''today'';
-
-    update capas_gral.comisaria_cuadricula_argentina a set departamen = b.circunscri
-    from capas_gral.comisaria_circunscripciones_argentina b 
-    where st_within (st_centroid(st_transform(a.geom,4326)), st_transform(b.geom,4326)) and a.departamen is  null and a.fechamod ::date = ''today'' and a.cliente = b.cliente;
-    
-    update capas_gral.comisaria_cuadricula_argentina a set departamen	= concat(''JEF. DE '', partido) WHERE departamen is  null and fechamod ::date = ''today'';
-
-    update capas_gral.comisaria_cuadricula_argentina set departamen = upper (departamen) where fechamod ::date = ''today'';
-    
     update capas_gral.comisaria_cuadricula_argentina a set comin = b.cria
     from capas_gral.comisaria_zona_argentina b 
     where st_within (st_centroid(st_transform(a.geom,4326)), st_transform(b.geom,4326)) and a.comin is  null and a.fechamod ::date = ''today'' and a.cliente = b.cliente;
@@ -189,7 +155,42 @@ EXECUTE (
     from capas_gral.comisaria_circunscripciones_argentina b 
     where st_within (st_centroid(st_transform(a.geom,4326)), st_transform(b.geom,4326)) and a.departamen is  null and a.fechamod ::date = ''today'';
 
-    update capas_gral.comisaria_zona_argentina a set departamen	= concat(''JEF. DE '', partido) WHERE departamen is  null and fechamod ::date = ''today'';');
+    update capas_gral.comisaria_zona_argentina a set departamen	= concat(''JEF. DE '', partido) WHERE departamen is  null and fechamod ::date = ''today'';
+                                                                                                                        
+    create table test.general as select id, (st_dump(st_transform(geom,4326))).geom as "simple" from 
+    capas_gral.comisaria_cuadricula_argentina
+    where fechamod ::date = ''today'';
+    update capas_gral.comisaria_cuadricula_argentina a 
+    set "simple" = b."simple"
+    from test.general b
+    where a.id = b.id
+    and a.fechamod ::date = ''today'';
+    drop table test.general;
+
+    update capas_gral.comisaria_cuadricula_argentina set cliente = upper(cliente) where fechamod ::date = ''today'';
+
+    update capas_gral.comisaria_cuadricula_argentina set comin = upper(comin) where fechamod ::date = ''today'';
+    
+    update capas_gral.comisaria_cuadricula_argentina a set localidad = b.localidad
+    from capas_gral.localidades b
+    where st_within (st_centroid(a.geom),b.geom) and a.localidad is null and a.fechamod ::date = ''today'';
+    
+    update capas_gral.comisaria_cuadricula_argentina a set partido = b.partido
+    from capas_gral.departamento b
+    where st_within (st_centroid(a.geom),b.geom) and a.fechamod ::date = ''today'';
+    
+    update capas_gral.comisaria_cuadricula_argentina a set provincia = upper(b.provincia)
+    from capas_gral.provincia b
+    where st_within (st_centroid(a.geom), b.geom) and a.fechamod ::date = ''today'';
+
+    update capas_gral.comisaria_cuadricula_argentina a set departamen = b.circunscri
+    from capas_gral.comisaria_circunscripciones_argentina b 
+    where st_within (st_centroid(st_transform(a.geom,4326)), st_transform(b.geom,4326)) and a.departamen is  null and a.fechamod ::date = ''today'' and a.cliente = b.cliente;
+    
+    update capas_gral.comisaria_cuadricula_argentina a set departamen	= concat(''JEF. DE '', partido) WHERE departamen is  null and fechamod ::date = ''today'';
+
+    update capas_gral.comisaria_cuadricula_argentina set departamen = upper (departamen) where fechamod ::date = ''today'';
+    ');
 RETURN query execute ('
     select concat(a.fechamod::date, '' Asentamientos'')::text, count (a.fechamod::date)::int
     from

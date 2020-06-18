@@ -117,7 +117,7 @@ base as
 			union all
 			select ST_EndPoint ((st_dump(geom)).geom) as geom,id::text from base),
 		bnodos as 
-			(select st_buffer(geom,5) as geom from nodos),
+			(select st_buffer(geom,3) as geom from nodos),
 		cantvectores as 
 			(select a.geom, count(distinct(b.id)) cantvectores from bnodos a
 			inner join base b on st_intersects (a.geom, b.geom)
@@ -131,7 +131,7 @@ base as
 			inner join cantnodos b on st_astext(a.geom) = st_astext(b.geom))x 
 			where cantnodos<>cantvectores),
 		nodosbuf as (select * from(select (st_dump(st_union(geom))).geom from bnodos)x
-						 where round(st_area(geom)) <> 78),
+						 where round(st_area(geom)) <> 28),
 	primera as (
 	select geom from (select * from nodossalida
 	union
@@ -142,12 +142,18 @@ base as
 			inner join base b on st_intersects(a.geom, b.geom)
 			where a.id <> b.id ),
 	segunda as
-	(select st_buffer(geom,5) from (select geom from inter
+	(select st_buffer(geom,3) from (select geom from inter
 	except
 	select geom from nodos)x),
-snodos as (
+dnodos as (
 	select distinct (geom), null::text as calle, null::int as fromleft, null::int as toleft, null::int as fromright, null::int as toright,
 					null::text as localidad,''nodos''::text as tipo  from (select * from primera union select * from segunda) x),
+fnodos as (
+	select a.geom from dnodos a inner join base b  
+	on st_intersects (a.geom, b.geom) group by a.geom having count(b.geom) not in (5,6)),
+snodos as (
+select * from dnodos where geom in (select geom from fnodos)),
+	
 
 sentido as
 			(
