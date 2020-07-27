@@ -109,6 +109,8 @@ EXECUTE (
 	WHERE ST_WITHIN(st_centroid(a.geom), b.geom) and ((a.fechamod = ''today'') or 
 	(a.partido is null or a.provincia is null or a.localidad is null));
 
+	update _cartografia.'||tabla||' set geom = st_linemerge(geom) and fechamod = ''today'';
+
 	update _cartografia.'||tabla||' set callesdup = 0 where callesdup is null and fechamod = ''today'';
 	update _cartografia.'||tabla||' set contalt = 0 where contalt is null and fechamod = ''today'';
 	update _cartografia.'||tabla||' set inconexos = 0 where inconexos is null and fechamod = ''today'';
