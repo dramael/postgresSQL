@@ -21,7 +21,7 @@ create table if not exists _mysql.departamento
 
 insert into _mysql.departamento 
 (depar_id,depar_descripcion, depar_fecha_actualizacion,depar_habilitado,depar_archivo_dbf,wkt)
-select idsoflex_prov::int*10000+idsoflex_dpto::int, partido,fechamod,''1'',shp, st_astext(simple) from capas_Gral.departamento where provincia = '''||tabla||''';
+select idsoflex_prov::int*1000+idsoflex_dpto::int, partido,fechamod,''1'',shp, st_astext(simple) from capas_Gral.departamento where provincia = '''||tabla||''';
 
 create table if not exists _mysql.localidad
 (loca_id int, loca_depar_id int, loca_descripcion text, loca_fecha_actualizacion text, loca_habilitado int, loca_archivo_dbf text, loca_fecha_archivo_dbf text, wkt text);
@@ -56,7 +56,7 @@ inner join _mysql.departamento b on st_within (st_centroid(st_setsrid(st_geomfro
 where a.loca_id = b.loca_id;
 
 -- Realiza el update de localidad id y lo normaliza
-update _mysql.localidad a set  loca_id = b.loca_id+ depar_prov_id*10000
+update _mysql.localidad a set  loca_id = b.loca_id+ depar_prov_id*1000
 from
 (select loca_id,depar_prov_id from _mysql.localidad a
 inner join _mysql.departamento b on st_within (st_centroid(st_setsrid(st_geomfromtext(a.wkt),4326)), st_setsrid(st_geomfromtext(b.wkt),4326))) b
@@ -76,12 +76,22 @@ select call_id,b.prov_id from _mysql.calles a
 inner join _mysql.provincia b on st_within (st_centroid(st_setsrid(st_geomfromtext(a.wkt),4326)),st_setsrid(st_geomfromtext(b.wkt),4326))) b
 where a.call_id = b.call_id;
 
--- actualiza el valor archivo id en callesaltura
-update _mysql.callesaltura a set caal_arch_id = b.arch_id
+-- actualiza el valor archivo id en callesalturas
+update _mysql.callesalturas a set caal_arch_id = b.arch_id
 from (
-select caal_id,b.arch_id from _mysql.callesaltura a
+select caal_id,b.arch_id from _mysql.callesalturas a
 inner join _mysql.archivosdbf b on st_within (st_centroid(st_setsrid(st_geomfromtext(a.wkt),4326)),st_setsrid(st_geomfromtext(b.wkt),4326))) b
 where a.caal_id = b.caal_id;
+
+
+-- Actualiza los valores de departamento en callesaltura
+
+update _mysql.callesalturas a set caal_depar_id = depar_id
+from (
+select caal_id, depar_id from _mysql.callesalturas a
+inner join _mysql.departamento b on st_within (st_centroid(st_setsrid(st_geomfromtext(a.wkt),4326)),st_setsrid(st_geomfromtext(b.wkt),4326))) b
+where a.caal_id = b.caal_id
+;
 
 -- actualiza el valor archivo id en calles interseccion2
 
@@ -174,6 +184,18 @@ from capas_gral.comisaria_cuadricula_Argentina
 where provincia ='''||tabla||''';
 
 
+
+update _mysql.calles set  CALL_ES_ALIAS=0 where call_es_alias is null;
+update _mysql.calles set  CALL_ALIAS_DE_CALL_ID=0 where CALL_ALIAS_DE_CALL_ID is null;
+update _mysql.calles  set call_tipo = 0;
+update _mysql.calles set CALL_FECHA_ACTUALIZACION = now();
+update _mysql.calles set CALL_ARCH_ID = 1;
+update _mysql.calles set CALL_RUTA_NOMBRE = '';
+update _mysql.calles set CALL_RUTA_TIPO = '';
+update _mysql.calles set CALL_RUTA_DESCRIPCION = '';
+update _mysql.calles set CALL_RUTA_OBSERVACION = '';
+update _mysql.callesalturas set CAAL_FECHA_ACTUALIZACION = now();
+update _mysql.callesalturas set CAAL_ARCH_ID = 1;
 
 '
 
