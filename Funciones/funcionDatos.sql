@@ -120,7 +120,20 @@ EXECUTE (
 	update _cartografia.'||tabla||' set fromleft = 0 where "check" = ''FALSO'';
 	update _cartografia.'||tabla||' set TOLEFT = 0 where "check" = ''FALSO'';
 	update _cartografia.'||tabla||' set FROMRIGHT = 0 where "check" = ''FALSO'';
-	update _cartografia.'||tabla||' set TORIGHT = 0 where "check" = ''FALSO'' ');
+	update _cartografia.'||tabla||' set TORIGHT = 0 where "check" = ''FALSO'' ;
+
+	update _cartografia.'||tabla||' set calle = replace(calle,''-'', '' '')	where calle like ''%-%''and fechamod = ''today'';
+	update _cartografia.'||tabla||' set calle3 = replace(calle3,''-'', '' '')	where calle3 like ''%-%''and fechamod = ''today'';
+
+
+
+
+update _cartografia.'||tabla||' set calle = replace(calle,(SELECT k FROM public.singlequote), '' '')	where fechamod = ''today'';
+update _cartografia.'||tabla||' set calle3 = replace(calle3,(SELECT k FROM public.singlequote), '' '') where fechamod = ''today'';
+
+	'
+	
+	);
 RETURN query execute (
 	'select "check"::text, count(*)::int as cantidad from  _cartografia.'||tabla||' 
 	where "check" is null group by "check"::text' );
