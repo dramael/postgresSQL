@@ -190,6 +190,27 @@ EXECUTE (
     update capas_gral.comisaria_cuadricula_argentina a set departamen	= concat(''JEF. DE '', partido) WHERE departamen is  null and fechamod ::date = ''today'';
 
     update capas_gral.comisaria_cuadricula_argentina set departamen = upper (departamen) where fechamod ::date = ''today'';
+
+
+
+    update capas_Gral.departamento a set idsoflex_prov = b.idsoflex_prov
+    from
+    (select a.id,b.idsoflex_prov from capas_gral.departamento a
+    inner join capas_gral.provincia b on st_within (a.geom, b.geom)) b
+    where a.id = b.id and fechamod ::date = ''today'' and a.idsoflex_prov is null;
+
+    update capas_Gral.localidades a set idsoflex_prov = b.idsoflex_prov, idsoflex_dpto = b.idsoflex_dpto
+    from
+    (select a.id,b.idsoflex_prov, b.idsoflex_dpto from capas_gral.localidades a
+    inner join capas_gral.departamento b on st_within (a.geom, b.geom) ) b
+    where a.id = b.id and fechamod ::date = ''today'' and a.idsoflex_prov is null and a.idsoflex_dpto is null;
+
+    UPDATE capas_Gral.comisaria_cuadricula_argentina set borrado = 0 where borrado is null and fechamod ::date = ''today'';
+    UPDATE capas_Gral.comisaria_zona_argentina set borrado = 0 where borrado is null and fechamod ::date = ''today'';
+
+
+
+
     ');
 RETURN query execute ('
     select concat(a.fechamod::date, '' Asentamientos'')::text, count (a.fechamod::date)::int

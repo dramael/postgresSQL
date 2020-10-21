@@ -1,7 +1,7 @@
 CREATE OR REPLACE FUNCTION test.actualizadordatos(tabla varchar(30)) RETURNS TABLE (tipo text, cantidad int) AS $func$
 BEGIN
 EXECUTE (
-	'update _cartografia.'||tabla||' set geom = st_multi(ST_SimplifyPreserveTopology(geom,0.1)) WHERE fechamod = ''today'';
+	'update _cartografia.'||tabla||' set geom = st_multi(ST_SimplifyPreserveTopology(geom,1)) WHERE fechamod = ''today'';
 	delete  from _cartografia.'||tabla||' where ST_Length(geom) < 0.1 and fechamod = ''today'';
 	delete  from _cartografia.'||tabla||' where ST_Length(geom) is null and fechamod = ''today'';
 	update _cartografia.'||tabla||' set calle2 = concat (upper(calle),''/'', fromleft, ''/'', toleft, ''/'', fromright, ''/'', toright)

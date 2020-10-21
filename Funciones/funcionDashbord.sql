@@ -43,7 +43,7 @@ callesduplicadas as
 						group by localidad,id, calle
 						) x
 					) a group by localidad, calle, ind having count (concat(localidad, calle, ind)) <> 1
-				) b on (a.localidad = b.localidad and a.calle = b.calle and b.ind BETWEEN a.fromleft and a.toright)) z
+				) b on (a.localidad = b.localidad and a.calle = b.calle and b.ind BETWEEN a.fromleft+1 and a.toright)) z
 			) f group by localidad, calle, fromleft, toleft, fromright, toright),
 continuidadaltura as (
 			select st_buffer(E.geom,5) as geom, e.calle, e.fromleft, e.toleft, e.fromright, e.toright, e.localidad, ''continuidadaltura'' as tipo from 

@@ -4,8 +4,7 @@ EXECUTE (
 
 '
 
-create table if not exists _mysql.pais
-(pais_id int, pais_descripcion text, pais_fecha_actualizacion text, pais_habilitado int, wkt text);
+create table if not exists _mysql.pais (pais_id int, pais_descripcion text, pais_fecha_actualizacion text, pais_habilitado int, wkt text);
 
 INSERT INTO _MYSQL.pais (wkt, PAIS_ID,PAIS_DESCRIPCION,PAIS_FECHA_ACTUALIZACION, PAIS_HABILITADO)
 select 	st_astext(GEOM), ''1'',NOMBRE,FECHAMOD,''1'' from capas_gral.hitos_pol where tipo = ''PAIS'';
@@ -108,44 +107,6 @@ select loca_id,b.arch_id from _mysql.localidad a
 inner join _mysql.archivosdbf b on st_within (st_centroid(st_setsrid(st_geomfromtext(a.wkt),4326)),st_setsrid(st_geomfromtext(b.wkt),4326))) b
 where a.loca_id = b.loca_id;
 
--- Actualiza la tabla de tipos id
-
-insert into _MYSQL.HITO_TIPO (hiti_id, hiti_codigo,hiti_descripcion, hiti_fecha_actualizacion, hiti_habilitado )
-select hiti_id::int, hiti_codigo,hiti_descripcion, (now()::timestamp)::text hiti_fecha_actualizacion, hiti_habilitado::int from _idhito ;
-
-
-CREATE TABLE if not exists _mysql.hito (  HITO_ID int,  HITO_HITI_ID int ,  HITO_DESCRIPCION text ,  HITO_CALLE text ,  HITO_ENTRE_CALLE1 text ,  HITO_ENTRE_CALLE2 text ,  HITO_ALTURA int ,  HITO_NUMERO int ,  HITO_PROV_ID int ,  HITO_DEPA_ID int ,  HITO_LOCA_ID int , HITO_TELEFONO text ,  HITO_LATITUD text ,  HITO_LONGITUD text ,  HITO_OBSERVACIONES text,
-HITO_FECHA_ACTUALIZACION text ,  HITO_HABILITADO int ,  HITO_ID_MAPA int ) ;
-
-insert into _mysql.hito (hito_id, hito_hiti_id, hito_descripcion, hito_calle, hito_latitud, hito_longitud,hito_fecha_actualizacion,hito_habilitado)
-select 
-case when id_hito is null then a.id+100000 else id_hito end hito_id, b.hiti_id as hito_hiti_id, nombre as hito_descripcion,direccion as hito_calle, y as hito_latitud, x as hito_longitud, fechamod as hito_fecha_actualizacion, borrado as hito_habilitado
-from capas_Gral.hitos a inner join _idhito b on a.tipo = b.hiti_descripcion where provincia = '''||tabla||'''  order by 1;
-
-update _mysql.hito a set hito_prov_id = b.prov_id
-from(
-select hito_id,prov_id  from _mysql.hito a
-inner join _mysql.provincia b on
-st_within (st_setsrid(st_makepoint(hito_longitud::double precision, hito_latitud::double precision),4326), st_setsrid(st_geomfromtext(b.wkt),4326)) 
-) b
-where a.hito_id = b.hito_id;
-
-update _mysql.hito a set hito_depa_id = b.depar_id
-from(
-select hito_id,depar_id  from _mysql.hito a
-inner join _mysql.departamento b on
-st_within (st_setsrid(st_makepoint(hito_longitud::double precision, hito_latitud::double precision),4326), st_setsrid(st_geomfromtext(b.wkt),4326)) 
-) b
-where a.hito_id = b.hito_id;
-
-update _mysql.hito a set hito_loca_id = b.loca_depar_id
-from(
-select hito_id,loca_depar_id  from _mysql.hito a
-inner join _mysql.localidad b on
-st_within (st_setsrid(st_makepoint(hito_longitud::double precision, hito_latitud::double precision),4326), st_setsrid(st_geomfromtext(b.wkt),4326)) 
-) b
-where a.hito_id = b.hito_id;
-
 drop table if exists _mysql.cuadricula;
 
 CREATE TABLE  IF NOT EXISTS _mysql.cuadricula
@@ -190,10 +151,10 @@ update _mysql.calles set  CALL_ALIAS_DE_CALL_ID=0 where CALL_ALIAS_DE_CALL_ID is
 update _mysql.calles  set call_tipo = 0;
 update _mysql.calles set CALL_FECHA_ACTUALIZACION = now();
 update _mysql.calles set CALL_ARCH_ID = 1;
-update _mysql.calles set CALL_RUTA_NOMBRE = '';
-update _mysql.calles set CALL_RUTA_TIPO = '';
-update _mysql.calles set CALL_RUTA_DESCRIPCION = '';
-update _mysql.calles set CALL_RUTA_OBSERVACION = '';
+update _mysql.calles set CALL_RUTA_NOMBRE = '''';
+update _mysql.calles set CALL_RUTA_TIPO = '''';
+update _mysql.calles set CALL_RUTA_DESCRIPCION = '''';
+update _mysql.calles set CALL_RUTA_OBSERVACION = '''';
 update _mysql.callesalturas set CAAL_FECHA_ACTUALIZACION = now();
 update _mysql.callesalturas set CAAL_ARCH_ID = 1;
 
