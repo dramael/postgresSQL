@@ -111,11 +111,11 @@ continuidadaltura as (
 			and (f.fromleft+f.toleft+f.fromright+f.toright) <>0 AND f.CALLE IS NOT NULL and contalt = 0
 							and (f.fromleft+f.toleft) <> 0 and (f.fromright+f.toright) <>0),
 base as 
-			(select geom,id from i'||tabla||'),
+			(select geom,id,calle from i'||tabla||'),
 		nodos as
-			(select ST_StartPoint ((st_dump(geom)).geom) as geom,id::text from base 
+			(select ST_StartPoint ((st_dump(geom)).geom) as geom,id::text,calle, ''inicio'' as tipo from base 
 			union all
-			select ST_EndPoint ((st_dump(geom)).geom) as geom,id::text from base),
+			select ST_EndPoint ((st_dump(geom)).geom) as geom,id::text,calle, ''fin'' as tipo from base),
 		bnodos as 
 			(select st_buffer(geom,3) as geom from nodos),
 		cantvectores as 
@@ -400,7 +400,39 @@ inconexos as (
 			and concat(calle, fromleft,toleft,fromright,toright,localidad) not in (
 			select concat(calle, fromleft,toleft,fromright,toright,localidad) from callesduplicadas
 			union all select concat(calle, fromleft,toleft,fromright,toright,localidad) from continuidadaltura
-			union all select concat(calle, fromleft,toleft,fromright,toright,localidad) from continuidadaltura2)) 
+			union all select concat(calle, fromleft,toleft,fromright,toright,localidad) from continuidadaltura2)),
+
+		inco1 as 
+		(select a.geom,a.id,a.calle,a.tipo,b.id as bid, b.calle as bcalle from nodos a
+		inner join nodos b on st_astext(a.geom)=st_astext(b.geom)
+		where a.id::int<>b.id::int),
+
+		inco2 as 
+		(select id from inco1 where calle=bcalle group by id),
+
+		inco3 as 
+		(select id, calle, tipo, bcalle from inco1 
+		where id not in(select id from inco2)
+		group by id, calle, tipo, bcalle 
+		having count (concat(id, calle, tipo, bcalle))=1),
+
+		inco4 as 
+		(select id, calle, bcalle from inco3 group by id, calle, bcalle
+		having count(concat(id, calle, bcalle))>1),
+
+nombresinconexos as (				 
+	select st_buffer(geom,10) as geom, calle, 0 as fromleft,0 as toleft,0 asfromright,0 as toright,null as localidad ,''nombresinconexos'' as tipo from base
+	where id::int in (select id::int from inco4 where bcalle is not null) )
+
+
+
+
+
+
+
+
+			
+			 
 	select * from frecuencia
 	union all 
 	select * from callesduplicadas 
@@ -417,7 +449,9 @@ inconexos as (
 	union all 
 	select * from continuidadaltura2 
 	union all 
-	select * from inconexos ;
+	select * from inconexos 
+	union all
+	select * from nombresinconexos;
 
 
 	select test.nodos('''||tabla||''');
