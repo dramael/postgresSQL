@@ -422,17 +422,19 @@ inconexos as (
 
 nombresinconexos as (				 
 	select st_buffer(geom,10) as geom, calle, 0 as fromleft,0 as toleft,0 asfromright,0 as toright,null as localidad ,''nombresinconexos'' as tipo from base
-	where id::int in (select id::int from inco4 where bcalle is not null) )
+	where id::int in (select id::int from inco4 where bcalle is not null) ),
+
+locparinconexos as (
+
+SELECT st_buffer(geom,10), null as calle,0 as fromleft,0 as toleft,0 asfromright,0 as toright, localidad,''locparinconexos'' as tipo FROM _CARTOGRAFIA.'||tabla||' WHERE PARTIDO NOT IN (
+SELECT PARTIDO FROM _CARTOGRAFIA.'||tabla||' GROUP BY PARTIDO ORDER BY COUNT (PARTIDO) DESC LIMIT 1)
+OR PARTIDO IS NULL 
+or localidad not in 
+(select localidad from capas_gral.localidades where partido in (SELECT PARTIDO FROM _CARTOGRAFIA.'||tabla||' GROUP BY PARTIDO ORDER BY COUNT (PARTIDO) DESC LIMIT 1)
+and provincia in (SELECT provincia FROM _CARTOGRAFIA.'||tabla||' GROUP BY provincia ORDER BY COUNT (provincia) DESC LIMIT 1))
+or localidad is null)
 
 
-
-
-
-
-
-
-			
-			 
 	select * from frecuencia
 	union all 
 	select * from callesduplicadas 
@@ -451,8 +453,10 @@ nombresinconexos as (
 	union all 
 	select * from inconexos 
 	union all
-	select * from nombresinconexos;
-
+	select * from nombresinconexos
+	union all
+	select * from locparinconexos
+;
 
 	select test.nodos('''||tabla||''');
 	drop table if exists test.nodos_'||tabla||';
