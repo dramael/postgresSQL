@@ -426,11 +426,11 @@ nombresinconexos as (
 
 locparinconexos as (
 
-SELECT st_buffer(geom,10), null as calle,0 as fromleft,0 as toleft,0 asfromright,0 as toright, localidad,''locparinconexos'' as tipo FROM _CARTOGRAFIA.'||tabla||' WHERE PARTIDO NOT IN (
-SELECT PARTIDO FROM _CARTOGRAFIA.'||tabla||' GROUP BY PARTIDO ORDER BY COUNT (PARTIDO) DESC LIMIT 1)
+SELECT st_buffer(geom,10), null as calle,0 as fromleft,0 as toleft,0 asfromright,0 as toright, localidad,''locparinconexos'' as tipo FROM _CARTOGRAFIA.'||tabla||' WHERE upper(PARTIDO) NOT IN (
+SELECT upper(PARTIDO) FROM _CARTOGRAFIA.'||tabla||' GROUP BY PARTIDO ORDER BY COUNT (PARTIDO) DESC LIMIT 1)
 OR PARTIDO IS NULL 
 or localidad not in 
-(select localidad from capas_gral.localidades where partido in (SELECT PARTIDO FROM _CARTOGRAFIA.'||tabla||' GROUP BY PARTIDO ORDER BY COUNT (PARTIDO) DESC LIMIT 1)
+(select localidad from capas_gral.localidades where upper(partido) in (SELECT upper(PARTIDO) FROM _CARTOGRAFIA.'||tabla||' GROUP BY PARTIDO ORDER BY COUNT (PARTIDO) DESC LIMIT 1)
 and provincia in (SELECT provincia FROM _CARTOGRAFIA.'||tabla||' GROUP BY provincia ORDER BY COUNT (provincia) DESC LIMIT 1))
 or localidad is null)
 
