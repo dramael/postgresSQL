@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION _mysql.importador(tabla varchar(30)) RETURNS TABLE (cantidad int) AS $func$
+CREATE OR REPLACE FUNCTION _mysql.importador_geometrias(tabla varchar(30)) RETURNS TABLE (cantidad int) AS $func$
 BEGIN
 EXECUTE (
 
@@ -14,8 +14,9 @@ select 	st_astext(GEOM), ''1'',NOMBRE,FECHAMOD,''1'' from capas_gral.hitos_pol w
 create table if not exists _mysql.provincia 
 (prov_id int, prov_pais_id int, prov_descripcion text, prov_fecha_actualizacion text,pais_habilitado int, wkt text);
 
-INSERT INTO _MYSQL.PROVINCIA (PROV_ID, PROV_DESCRIPCION,prov_fecha_actualizacion,wkt,pais_habilitado)
-SELECT IDSOFLEX_PROV::INT,PROVINCIA,FECHAMOD,st_Astext(SIMPLE),1 FROM CAPAS_GRAL.PROVINCIA ORDER BY IDSOFLEX_PROV;
+
+INSERT INTO _MYSQL.PROVINCIA (PROV_ID,prov_pais_id, PROV_DESCRIPCION,prov_fecha_actualizacion,wkt,pais_habilitado)
+SELECT IDSOFLEX_PROV::INT,1,PROVINCIA,FECHAMOD,st_Astext(SIMPLE),1 FROM CAPAS_GRAL.PROVINCIA ORDER BY IDSOFLEX_PROV;
 
 
 
@@ -23,15 +24,15 @@ create table if not exists _mysql.departamento
 (depar_id int, depar_prov_id int, depar_descripcion text,depar_fecha_actualizacion text, depar_habilitado int, depar_archivo_dbf text, depar_fecha_archivo_dbf text, wkt text);
 
 insert into _mysql.departamento 
-(depar_id,depar_descripcion, depar_fecha_actualizacion,depar_habilitado,depar_archivo_dbf,wkt)
-select idsoflex_prov::int*1000+idsoflex_dpto::int, partido,fechamod,''1'',shp, st_astext(simple) from capas_Gral.departamento where provincia = '''||tabla||''';
+(depar_id,depar_descripcion, depar_fecha_actualizacion,depar_habilitado,depar_archivo_dbf,depar_fecha_archivo_dbf,wkt)
+select idsoflex_prov::int*1000+idsoflex_dpto::int, partido,fechamod,''1'',shp,now()::timestamp::text, st_astext(simple) from capas_Gral.departamento where provincia = '''||tabla||''';
 
 
 create table if not exists _mysql.localidad
 (loca_id int, loca_depar_id int, loca_descripcion text, loca_fecha_actualizacion text, loca_habilitado int, loca_archivo_dbf text, loca_fecha_archivo_dbf text, wkt text);
 
-insert into _mysql.localidad (loca_id,loca_descripcion,loca_fecha_actualizacion,loca_habilitado, wkt)
-SELECT idsoflex_local::int,localidad,fechamod,''1'',st_astext(simple) FROM CAPAS_gRAL.LOCALIDADES WHERE PROVINCIA = '''||tabla||''' and localidad not like ''%ZONA RURAL%'' and idsoflex_local is not null
+insert into _mysql.localidad (loca_id,loca_descripcion,loca_fecha_actualizacion,loca_habilitado,loca_fecha_archivo_dbf, wkt)
+SELECT idsoflex_local::int,localidad,fechamod,''1'',now()::timestamp::text,st_astext(simple) FROM CAPAS_gRAL.LOCALIDADES WHERE PROVINCIA = '''||tabla||''' and localidad not like ''%ZONA RURAL%'' and idsoflex_local is not null
 ORDER BY idsoflex_local ASC;
 
 
@@ -39,10 +40,10 @@ ORDER BY idsoflex_local ASC;
 create table if not exists _mysql.archivosdbf 
 (id int,arch_id int, arch_nombre text, arch_fecha_modificacion text,arch_fecha_actualizacion text, wkt text );
 
+insert into _mysql.archivosdbf
+(id, arch_id, arch_nombre, arch_fecha_modificacion,arch_fecha_actualizacion,wkt)
+select id,arch_id,partido as arch_nombre,now()::timestamp::text as arch_fecha_modificacion ,now()::timestamp::text as arch_fecha_actualizacion, st_Astext(simple)  from capas_gral.departamento;
 
-INSERT INTO _mysql.archivosdbf 
-select id,"ARCH_ID","CALLES",(now()::timestamp)::text, (now()::timestamp)::text, st_astext("GEOM") from _avl."Localizacion calles_Argentina"
-WHERE "PROVINCIA" = '''||tabla||''' ;
 
 
 
