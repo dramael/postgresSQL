@@ -1,8 +1,15 @@
-CREATE OR REPLACE FUNCTION _mysql.importador(tabla varchar(30)) RETURNS TABLE (cantidad int) AS $func$
+CREATE OR REPLACE FUNCTION _mysql.importador_calles(tabla varchar(30)) RETURNS TABLE (cantidad int) AS $func$
 BEGIN
 EXECUTE (
 
 '
+
+
+update _mysql.calles set geom = st_multi(st_setsrid(st_geomfromtext(wkt),4326)) where geom is null;
+update _mysql.callesalturas set geom = st_multi(st_setsrid(st_geomfromtext(wkt),4326))where geom is null;
+update _mysql.callesintersecciones2 set geom1 = st_setsrid(st_makepoint(cain_latitud1::double precision,cain_longitud1::double precision),4326)
+update _mysql.callesintersecciones2 set geom2 = st_setsrid(st_makepoint(cain_latitud2::double precision,cain_longitud2::double precision),4326)
+
 
 -- actualiza los valor de departamento en calles
 update _mysql.calles a  set call_Depar_id = b.loca_depar_id

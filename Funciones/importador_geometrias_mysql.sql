@@ -46,6 +46,12 @@ select id,arch_id,partido as arch_nombre,now()::timestamp::text as arch_fecha_mo
 
 
 
+update _mysql.archivosdbf set geom = st_multi(st_setsrid(st_geomfromtext(wkt),4326)) where geom is null;
+update _mysql.departamento set geom = st_multi(st_setsrid(st_geomfromtext(wkt),4326)) where geom is null;
+update _mysql.localidad set geom = st_multi(st_setsrid(st_geomfromtext(wkt),4326)) where geom is null;
+update _mysql.pais set geom = st_multi(st_setsrid(st_geomfromtext(wkt),4326)) where geom is null;
+update _mysql.provincia set geom = st_multi(st_setsrid(st_geomfromtext(wkt),4326)) where geom is null;
+
 
 -- actualiza el valor de pais en provncia
 update _mysql.provincia set prov_pais_id = 1 WHERE prov_pais_id is null;
