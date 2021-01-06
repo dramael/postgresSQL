@@ -136,17 +136,17 @@ EXECUTE ('
 	from capas_gral.barrios b
 	where st_within (st_centroid(a.geom), b.geom) and a.barrio is null and a.fechamod::date = ''today'';
 	update capas_gral.hitos_linea set nombre = trim(nombre) where fechamod::date = ''today'';
-	insert into _backup.hitos
+	insert into _backup.hitos (id_hito, tabla, wkt, nombre, direccion, telefono, tipo, observacio, provincia, partido, localidad, x, y,   borrado)
 	SELECT id as id_hito,''hitos_pol''::text as tabla, st_astext(geom)::text as wkt, nombre, direccion, telefono, tipo, 
-	observacio, provincia, partido, localidad, x, y
+	observacio, provincia, partido, localidad, x, y,borrado
 		FROM capas_gral.hitos_pol where fechamod::date = ''today''; 
-	insert into _backup.hitos
+	insert into _backup.hitos (id_hito, tabla, wkt, nombre, direccion, telefono, tipo, observacio, provincia, partido, localidad, x, y,   borrado)
 	SELECT id as id_hito,''hitos_linea''::text as tabla, st_astext(geom)::text as wkt, nombre, direccion, telefono, tipo, 
-	observacio, provincia, partido, localidad, x, y
+	observacio, provincia, partido, localidad, x, y,borrado
 		FROM capas_gral.hitos_linea where fechamod::date = ''today''; 
-	insert into _backup.hitos
+	insert into _backup.hitos (id_hito, tabla, wkt, nombre, direccion, telefono, tipo, observacio, provincia, partido, localidad, x, y,   borrado)
 		SELECT id as id_hito,''hitos''::text as tabla, st_astext(geom)::text as wkt, nombre, direccion, telefono, tipo, 
-	observacio, provincia, partido, localidad, x, y
+	observacio, provincia, partido, localidad, x, y,borrado
 		FROM capas_gral.hitos where fechamod::date = ''today'';
 	DELETE FROM _backup.hitos A USING _backup.hitos B
 	WHERE a.id_hito = b.id_hito and a.tabla = b.tabla and a.pk < b.pk and a.fechamod = b.fechamod;');

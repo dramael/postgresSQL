@@ -386,21 +386,27 @@ continuidadaltura2 as
 								and (f.fromleft+f.toleft) <> 0 and (f.fromright+f.toright) = 0
 				order by e.localidad, e.calle))x),
 inconexos as (
-			select st_buffer(geom,15) as geom , calle::text,fromleft::int, toleft::int,fromright::int, toright::int, localidad::text, ''inconexos''::text as tipo from _cartografia.'||tabla||' where id in (
+			select st_buffer(geom,15) as geom , calle::text,fromleft::int, toleft::int,fromright::int, toright::int, localidad::text, ''inconexos''::text as tipo from _cartografia.'||tabla||' 
+			where id in (
 				select a.id from _cartografia.'||tabla||' a
 				inner join _cartografia.'||tabla||' b on st_intersects(a.geom, b.geom)
 				inner join _cartografia.'||tabla||' c on st_intersects(a.geom, c.geom)
-				where a.calle = b.calle and a.calle = c.calle
-				and b.fromleft < c.fromleft and a.fromleft <> b.toright+1 and a.toright+1 <> c.fromleft
-				and a.id <> b.id and a.id <> c.id
-				and (a.fromleft+a.toleft) <> 0 and (a.fromright+a.toright) <>0 and
-					 (b.fromleft+b.toleft) <> 0 and (b.fromright+b.toright) <> 0 and
-					 (c.fromleft+c.toleft)<> 0 and (c.fromright+c.toright) <>0
-			) and (fromleft+toleft) <> 0 and (fromright+toright) <>0 and inconexos = 0
+				where a.calle = b.calle and a.calle = c.calle and a.id <> b.id and a.id <> c.id and
+				((b.fromleft < c.fromleft and a.fromleft <> b.toright+1 and a.toright+1 <> c.fromleft
+				and (b.fromleft+b.toleft)<>0 and (b.fromright+b.toright)<>0
+				and	(c.fromleft+c.toleft)<>0 and (c.fromright+c.toright) <>0) or
+				(b.fromleft < c.fromleft and a.fromleft <> b.toleft+2 and a.toleft+2 <> c.fromleft
+				and (b.fromleft+b.toleft) <> 0 and (b.fromright+b.toright)=0
+				and	(c.fromleft+c.toleft)<>0 and (c.fromright+c.toright) =0) or
+				(b.fromright < c.fromright and a.fromright <> b.toright+2 and a.toright+2 <> c.fromright
+				and (b.fromright+b.toright) <> 0 and (b.fromleft+b.toleft)=0
+				and	(c.fromright+c.toright)<>0 and (c.fromleft+c.toleft) =0))
+				) and inconexos = 0 and ("check"<>''FALSO'' OR "check" is null) 
 			and concat(calle, fromleft,toleft,fromright,toright,localidad) not in (
 			select concat(calle, fromleft,toleft,fromright,toright,localidad) from callesduplicadas
 			union all select concat(calle, fromleft,toleft,fromright,toright,localidad) from continuidadaltura
-			union all select concat(calle, fromleft,toleft,fromright,toright,localidad) from continuidadaltura2)),
+			union all select concat(calle, fromleft,toleft,fromright,toright,localidad) from continuidadaltura2)
+			order by calle,fromleft,fromright,localidad),
 
 		inco1 as 
 		(select a.geom,a.id,a.calle,a.tipo,b.id as bid, b.calle as bcalle from nodos a
@@ -421,18 +427,27 @@ inconexos as (
 		having count(concat(id, calle, bcalle))>1),
 
 nombresinconexos as (				 
-	select st_buffer(geom,10) as geom, calle, 0 as fromleft,0 as toleft,0 asfromright,0 as toright,null as localidad ,''nombresinconexos'' as tipo from base
+	select st_buffer(geom,10) as geom, calle, 0 as fromleft,0 as toleft,0 as fromright,0 as toright,null as localidad ,''nombresinconexos'' as tipo from base
 	where id::int in (select id::int from inco4 where bcalle is not null) ),
+
 
 locparinconexos as (
 
-SELECT st_buffer(geom,10), null as calle,0 as fromleft,0 as toleft,0 asfromright,0 as toright, localidad,''locparinconexos'' as tipo FROM _CARTOGRAFIA.'||tabla||' WHERE upper(PARTIDO) NOT IN (
-SELECT upper(PARTIDO) FROM _CARTOGRAFIA.'||tabla||' GROUP BY PARTIDO ORDER BY COUNT (PARTIDO) DESC LIMIT 1)
-OR PARTIDO IS NULL 
-or localidad not in 
-(select localidad from capas_gral.localidades where upper(partido) in (SELECT upper(PARTIDO) FROM _CARTOGRAFIA.'||tabla||' GROUP BY PARTIDO ORDER BY COUNT (PARTIDO) DESC LIMIT 1)
-and provincia in (SELECT provincia FROM _CARTOGRAFIA.'||tabla||' GROUP BY provincia ORDER BY COUNT (provincia) DESC LIMIT 1))
-or localidad is null)
+
+select partido,provincia from _cartografia.'||tabla||'
+group by partido,provincia order by count (partido) desc limit 1),
+adminconexos2 as
+(select a.localidad,a.partido,a.provincia from capas_gral.localidades a inner join locparinconexos b
+on a.provincia=b.provincia and (a.partido=b.partido or b.PROVINCIA=''CIUDAD DE BUENOS AIRES'')  
+group by a.localidad,a.partido,a.provincia),  
+adminconexos3 as
+(select st_buffer(geom,10),calle,fromleft,toleft,fromright,toright,localidad,''adminconexos''::text as tipo
+from _cartografia.'||tabla||' where trim(concat (localidad,partido,provincia))  
+not in (select concat (localidad,partido,provincia) from adminconexos2)),
+
+largo as (
+	select st_buffer(geom,10),calle,fromleft,toleft,fromright,toright,localidad,''largo''::text as tipo
+	from _cartografia.'||tabla||' where length(st_astext(geom))> 4000)
 
 
 	select * from frecuencia
@@ -455,7 +470,9 @@ or localidad is null)
 	union all
 	select * from nombresinconexos
 	union all
-	select * from locparinconexos
+	select * from adminconexos3
+	union all
+	select * from largo
 ;
 
 	select test.nodos('''||tabla||''');
