@@ -411,24 +411,35 @@ inconexos as (
 		inco1 as 
 		(select a.geom,a.id,a.calle,a.tipo,b.id as bid, b.calle as bcalle from nodos a
 		inner join nodos b on st_astext(a.geom)=st_astext(b.geom)
-		where a.id::int<>b.id::int),
-
+		where a.id::int<>b.id::int and a.calle is not null and b.calle is not null),
+		
 		inco2 as 
 		(select id from inco1 where calle=bcalle group by id),
 
 		inco3 as 
 		(select id, calle, tipo, bcalle from inco1 
-		where id not in(select id from inco2)
+		where id not in (select id from inco2)
 		group by id, calle, tipo, bcalle 
 		having count (concat(id, calle, tipo, bcalle))=1),
 
 		inco4 as 
 		(select id, calle, bcalle from inco3 group by id, calle, bcalle
 		having count(concat(id, calle, bcalle))>1),
+					 
+		inco5 as
+		(select a.id,c.calle,a.geom ageom,b.geom bgeom,c.geom cgeom,d.geom dgeom from nodos a inner join nodos b
+		on a.id=b.id and st_astext(a.geom)<>st_astext (b.geom) and a.calle is null inner join nodos c on
+		a.id<>c.id and st_astext(b.geom)=st_astext(c.geom) and st_astext(a.geom)<>st_astext(c.geom)
+		and c.calle is not null inner join nodos d on c.id=d.id and st_astext(c.geom)<>st_astext(d.geom)),
+		
+		inco6 as
+		(select id, angle from 
+		(select id, degrees(st_angle(ageom,bgeom,dgeom)) angle from inco5)x
+		where x.angle between 175 and 185),
 
 nombresinconexos as (				 
 	select st_buffer(geom,10) as geom, calle, 0 as fromleft,0 as toleft,0 as fromright,0 as toright,null as localidad ,''nombresinconexos'' as tipo from base
-	where id::int in (select id::int from inco4 where bcalle is not null) ),
+	where id::int in (select id::int from inco4 union select id::int from inco6)),
 
 
 locparinconexos as (

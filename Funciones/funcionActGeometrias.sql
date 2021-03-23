@@ -1,7 +1,21 @@
 CREATE OR REPLACE FUNCTION test.actualizaciondegeometrias () RETURNS TABLE (tabla text, cantidad int) AS $func$
 BEGIN
 EXECUTE (
-    'create table test.general as select id, (st_dump(st_transform(geom,4326))).geom as "simple" from 
+    '
+    UPDATE capas_Gral.comisaria_cuadricula_argentina set geom = st_multi(ST_SimplifyPreserveTopology(geom,1)) where fechamod ::date = ''today'';
+    UPDATE capas_Gral.comisaria_zona_argentina set geom = st_multi(ST_SimplifyPreserveTopology(geom,1)) where fechamod ::date = ''today'';
+	UPDATE capas_Gral.barrios set geom = st_multi(ST_SimplifyPreserveTopology(geom,1)) where fechamod ::date = ''today'';
+	
+    
+    UPDATE capas_Gral.localidades set geom = st_multi(ST_SimplifyPreserveTopology(geom,1)) where fechamod ::date = ''today'';
+    update  capas_gral.comisaria_cuadricula_argentina set geom =  ST_ForcePolygonCW (geom)  where  ST_IsPolygonCW (geom) = ''false'' and fechamod ::date = ''today'';
+    update  capas_gral.comisaria_zona_argentina set geom =  ST_ForcePolygonCW (geom)  where  ST_IsPolygonCW (geom) = ''false'' and fechamod ::date = ''today'';
+    update  capas_gral.departamento set geom =  ST_ForcePolygonCW (geom)  where  ST_IsPolygonCW (geom) = ''false'' and fechamod ::date = ''today'';
+    update  capas_gral.localidades set geom =  ST_ForcePolygonCW (geom)  where  ST_IsPolygonCW (geom) = ''false'' and fechamod ::date = ''today'';
+    update  capas_gral.asentamientos set geom =  ST_ForcePolygonCW (geom)  where  ST_IsPolygonCW (geom) = ''false'' and fechamod ::date = ''today''; 
+    
+    
+    create table test.general as select id, (st_dump(st_transform(geom,4326))).geom as "simple" from 
     capas_gral.asentamientos
     where fechamod ::date = ''today'';
     update capas_gral.asentamientos a 
@@ -35,6 +49,10 @@ EXECUTE (
     from capas_gral.provincia b
     where st_within (a.geom, b.geom) and a.provincia is null and a.fechamod ::date = ''today'';
     update capas_gral.departamento set partido = upper (partido) where fechamod ::date = ''today'';
+
+
+
+
 
     create table test.general as select id, (st_dump(st_transform(geom,4326))).geom as "simple" from 
     capas_gral.barrios
@@ -207,6 +225,12 @@ EXECUTE (
 
     UPDATE capas_Gral.comisaria_cuadricula_argentina set borrado = 0 where borrado is null and fechamod ::date = ''today'';
     UPDATE capas_Gral.comisaria_zona_argentina set borrado = 0 where borrado is null and fechamod ::date = ''today'';
+
+
+
+
+
+
 
 
 
