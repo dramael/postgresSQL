@@ -52,7 +52,7 @@ TRUNCATE TABLE _MYSQL.ARCHIVOSDBF;
 
 insert into _mysql.archivosdbf
 (id, arch_id, arch_nombre, arch_fecha_modificacion,arch_fecha_actualizacion,wkt)
-select id,arch_id,partido as arch_nombre,now()::timestamp::text as arch_fecha_modificacion ,now()::timestamp::text as arch_fecha_actualizacion, st_Astext(simple)  from capas_gral.departamento where provincia = '''||tabla||''';
+select id,arch_id,concat(shp,''.shp'') as arch_nombre,now()::timestamp::text as arch_fecha_modificacion ,now()::timestamp::text as arch_fecha_actualizacion, st_Astext(simple)  from capas_gral.departamento where provincia = '''||tabla||''';
 
 
 
