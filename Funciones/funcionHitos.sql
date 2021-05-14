@@ -42,15 +42,12 @@ EXECUTE ('
 	update capas_gral.hitos set NOMBRE = replace(NOMBRE , ''Ü'',''U'')				where nombre like ''%Ü%''and fechamod::date = ''today'';  
 	update capas_gral.hitos set NOMBRE = replace(NOMBRE , ''Ú'',''U'')				where nombre like ''%Ú%''and fechamod::date = ''today''; 
 	update capas_gral.hitos set NOMBRE = replace(NOMBRE , ''"'','' '')				where nombre like ''%"%''and fechamod::date = ''today''; 
-	update capas_gral.hitos set NOMBRE = replace(NOMBRE , ''.'','' '')				where  nombre like ''%.%'' and fechamod::date = ''today''; 
-	update capas_gral.hitos set NOMBRE = replace(NOMBRE , '','','' '')				where nombre like ''%,%'' and fechamod::date = ''today''; 
 	update capas_gral.hitos set NOMBRE = replace(NOMBRE , ''  '','' '')				where nombre like ''%  %''and fechamod::date = ''today''; 
 	update capas_gral.hitos set NOMBRE = replace(NOMBRE , ''CAPITAN'',''CAP'')		where  nombre like ''%CAPITAN%''and fechamod::date = ''today''; 
 	update capas_gral.hitos set NOMBRE = replace(NOMBRE , ''GENERAL'',''GRAL'')		where nombre like ''%GENERAL%'' and fechamod::date = ''today''; 
 	update capas_gral.hitos set NOMBRE = replace(NOMBRE , ''PRESIDENTE'',''PRES'')	where nombre like ''%PRESIDENTE%''and  fechamod::date = ''today''; 
 	update capas_gral.hitos set NOMBRE = replace(NOMBRE , ''TENIENTE'',''TTE'')		where nombre like ''%TENIENTE%'' and fechamod::date = ''today''; 
 	update capas_gral.hitos set NOMBRE = replace(NOMBRE , ''º'','''')				where nombre like ''%º%''and  fechamod::date = ''today''; 
-	update capas_gral.hitos set NOMBRE = replace(NOMBRE , ''-'','''')				where nombre like ''%-%'' and fechamod::date = ''today''; 
 	update capas_gral.hitos set NOMBRE = replace(NOMBRE , ''*'','''')				where nombre like ''%*%'' and fechamod::date = ''today'';
 	update capas_gral.hitos set NOMBRE = replace(NOMBRE , ''+'','''')				where nombre like ''%+%''and fechamod::date = ''today'';
 	update capas_gral.hitos set NOMBRE = replace(NOMBRE , ''°'','''')				where nombre like ''%°%''and  fechamod::date = ''today''; 
@@ -83,18 +80,21 @@ EXECUTE ('
 	update capas_gral.hitos_pol set NOMBRE = replace(NOMBRE , ''Ü'',''U'')				where nombre like ''%Ü%''and fechamod::date = ''today'';  
 	update capas_gral.hitos_pol set NOMBRE = replace(NOMBRE , ''Ú'',''U'')				where nombre like ''%Ú%''and fechamod::date = ''today''; 
 	update capas_gral.hitos_pol set NOMBRE = replace(NOMBRE , ''"'','' '')				where nombre like ''%"%''and fechamod::date = ''today''; 
-	update capas_gral.hitos_pol set NOMBRE = replace(NOMBRE , ''.'','' '')				where  nombre like ''%.%'' and fechamod::date = ''today''; 
-	update capas_gral.hitos_pol set NOMBRE = replace(NOMBRE , '','','' '')				where nombre like ''%,%'' and fechamod::date = ''today''; 
 	update capas_gral.hitos_pol set NOMBRE = replace(NOMBRE , ''  '','' '')				where nombre like ''%  %''and fechamod::date = ''today''; 
 	update capas_gral.hitos_pol set NOMBRE = replace(NOMBRE , ''CAPITAN'',''CAP'')		where  nombre like ''%CAPITAN%''and fechamod::date = ''today''; 
 	update capas_gral.hitos_pol set NOMBRE = replace(NOMBRE , ''GENERAL'',''GRAL'')		where nombre like ''%GENERAL%'' and fechamod::date = ''today''; 
 	update capas_gral.hitos_pol set NOMBRE = replace(NOMBRE , ''PRESIDENTE'',''PRES'')	where nombre like ''%PRESIDENTE%''and  fechamod::date = ''today''; 
 	update capas_gral.hitos_pol set NOMBRE = replace(NOMBRE , ''TENIENTE'',''TTE'')		where nombre like ''%TENIENTE%'' and fechamod::date = ''today''; 
 	update capas_gral.hitos_pol set NOMBRE = replace(NOMBRE , ''º'','''')				where nombre like ''%º%''and  fechamod::date = ''today''; 
-	update capas_gral.hitos_pol set NOMBRE = replace(NOMBRE , ''-'','''')				where nombre like ''%-%'' and fechamod::date = ''today''; 
 	update capas_gral.hitos_pol set NOMBRE = replace(NOMBRE , ''*'','''')				where nombre like ''%*%'' and fechamod::date = ''today'';
 	update capas_gral.hitos_pol set NOMBRE = replace(NOMBRE , ''+'','''')				where nombre like ''%+%''and fechamod::date = ''today'';
 	update capas_gral.hitos_pol set NOMBRE = replace(NOMBRE , ''°'','''')				where nombre like ''%°%''and  fechamod::date = ''today''; 
+
+	update capas_gral.hitos set nombre=translate(nombre,''ÖË'',''OE'')  where nombre like any (array[''%Ö%'',''%Ë%'']) and  fechamod::date = ''today'';
+	update capas_gral.hitos_linea set nombre=translate(nombre,''ÖË'',''OE'')  where nombre like any (array[''%Ö%'',''%Ë%'']) and  fechamod::date = ''today'';
+	update capas_gral.hitos_pol set nombre=translate(nombre,''ÖË'',''OE'')  where nombre like any (array[''%Ö%'',''%Ë%'']) and  fechamod::date = ''today'';
+
+
 	update capas_gral.hitos_linea a set borrado = 0 where borrado is null and fechamod::date = ''today'';
 	update capas_gral.hitos_linea a set nombre = upper(nombre) where fechamod::date = ''today'';
 	update capas_gral.hitos_linea a set direccion = upper(direccion) where fechamod::date = ''today'';
@@ -108,15 +108,12 @@ EXECUTE ('
 	update capas_gral.hitos_linea set NOMBRE = replace(NOMBRE , ''Ü'',''U'')				where nombre like ''%Ü%''and fechamod::date = ''today'';  
 	update capas_gral.hitos_linea set NOMBRE = replace(NOMBRE , ''Ú'',''U'')				where nombre like ''%Ú%''and fechamod::date = ''today''; 
 	update capas_gral.hitos_linea set NOMBRE = replace(NOMBRE , ''"'','' '')				where nombre like ''%"%''and fechamod::date = ''today''; 
-	update capas_gral.hitos_linea set NOMBRE = replace(NOMBRE , ''.'','' '')				where  nombre like ''%.%'' and fechamod::date = ''today''; 
-	update capas_gral.hitos_linea set NOMBRE = replace(NOMBRE , '','','' '')				where nombre like ''%,%'' and fechamod::date = ''today''; 
 	update capas_gral.hitos_linea set NOMBRE = replace(NOMBRE , ''  '','' '')				where nombre like ''%  %''and fechamod::date = ''today''; 
 	update capas_gral.hitos_linea set NOMBRE = replace(NOMBRE , ''CAPITAN'',''CAP'')		where  nombre like ''%CAPITAN%''and fechamod::date = ''today''; 
 	update capas_gral.hitos_linea set NOMBRE = replace(NOMBRE , ''GENERAL'',''GRAL'')		where nombre like ''%GENERAL%'' and fechamod::date = ''today''; 
 	update capas_gral.hitos_linea set NOMBRE = replace(NOMBRE , ''PRESIDENTE'',''PRES'')	where nombre like ''%PRESIDENTE%''and  fechamod::date = ''today''; 
 	update capas_gral.hitos_linea set NOMBRE = replace(NOMBRE , ''TENIENTE'',''TTE'')		where nombre like ''%TENIENTE%'' and fechamod::date = ''today''; 
 	update capas_gral.hitos_linea set NOMBRE = replace(NOMBRE , ''º'','''')				where nombre like ''%º%''and  fechamod::date = ''today''; 
-	update capas_gral.hitos_linea set NOMBRE = replace(NOMBRE , ''-'','''')				where nombre like ''%-%'' and fechamod::date = ''today''; 
 	update capas_gral.hitos_linea set NOMBRE = replace(NOMBRE , ''*'','''')				where nombre like ''%*%'' and fechamod::date = ''today'';
 	update capas_gral.hitos_linea set NOMBRE = replace(NOMBRE , ''+'','''')				where nombre like ''%+%''and fechamod::date = ''today'';
 	update capas_gral.hitos_linea set NOMBRE = replace(NOMBRE , ''°'','''')				where nombre like ''%°%''and  fechamod::date = ''today''; 

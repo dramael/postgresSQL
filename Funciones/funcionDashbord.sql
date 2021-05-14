@@ -444,11 +444,55 @@ group by partido,provincia order by count (partido) desc limit 1),
 adminconexos2 as
 (select a.localidad,a.partido,a.provincia from capas_gral.localidades a inner join locparinconexos b
 on a.provincia=b.provincia and (a.partido=b.partido or b.PROVINCIA=''CIUDAD DE BUENOS AIRES'')  
-group by a.localidad,a.partido,a.provincia),  
-adminconexos_salida as
-(select st_buffer(geom,10),calle,fromleft,toleft,fromright,toright,localidad,''adminconexos''::text as tipo
-from base where trim(concat (localidad,partido,provincia))  
-not in (select concat (localidad,partido,provincia) from adminconexos2)),
+group by a.localidad,a.partido,a.provincia)
+,partprov as (select partido,provincia from base group by partido,provincia order by count (partido) desc limit 1)
+
+,geoms as 
+(select id,geom,''dpto'' as capa from capas_gral.departamento a,partprov b where borrado=0 and (a.partido=b.partido or b.provincia=''CIUDAD DE BUENOS AIRES'')and a.provincia=b.provincia
+ union
+ select id,geom,''loc'' as capa from capas_gral.localidades a,partprov b where borrado=0 and (a.partido=b.partido or b.provincia=''CIUDAD DE BUENOS AIRES'') and a.provincia=b.provincia
+ union
+ select id,geom,''zonasisep'' as capa from capas_gral.comisaria_zona_argentina a ,partprov b where borrado=0 and a.cliente=''SISEP'' and (a.partido=b.partido or b.provincia=''CIUDAD DE BUENOS AIRES'') and a.provincia=b.provincia
+ union
+ select id,geom,''cuadsisep'' as capa from capas_gral.comisaria_cuadricula_argentina a,partprov b where borrado=0 and a.cliente=''SISEP'' and (a.partido=b.partido or b.provincia=''CIUDAD DE BUENOS AIRES'') and a.provincia=b.provincia
+ union
+ select id,geom,''zonaavl'' as capa from capas_gral.comisaria_zona_argentina a ,partprov b where borrado=0 and a.cliente=''AVL'' and (a.partido=b.partido or b.provincia=''CIUDAD DE BUENOS AIRES'') and a.provincia=b.provincia
+ union
+ select id,geom,''cuadavl'' as capa from capas_gral.comisaria_cuadricula_argentina a,partprov b where borrado=0 and a.cliente=''AVL'' and (a.partido=b.partido or b.provincia=''CIUDAD DE BUENOS AIRES'') and a.provincia=b.provincia
+ union
+ select id,geom,''zonaambos'' as capa from capas_gral.comisaria_zona_argentina a ,partprov b where borrado=0 and a.cliente=''AMBOS'' and (a.partido=b.partido or b.provincia=''CIUDAD DE BUENOS AIRES'') and a.provincia=b.provincia
+ union
+ select id,geom,''cuadambos'' as capa from capas_gral.comisaria_cuadricula_argentina a,partprov b where borrado=0 and a.cliente=''AMBOS'' and (a.partido=b.partido or b.provincia=''CIUDAD DE BUENOS AIRES'') and a.provincia=b.provincia)
+
+,bufer as
+(select id,st_buffer(st_exteriorring((st_dump(geom)).geom),10)geom,capa from geoms)
+
+,calleygeom as
+(select a.id,a.geom,a.calle,a.localidad,b.id as bid,c.id as cid,c.capa from base a 
+ inner join bufer b on st_within (a.geom,b.geom)
+ inner join geoms c on st_within (st_centroid(a.geom),c.geom) and b.id<>c.id and b.capa=c.capa)
+  
+,geominco as	  
+ (select a.id,a.geom,a.calle,a.localidad,a.cid,a.bid,a.capa from calleygeom a
+ inner join calleygeom b on a.calle=b.calle and a.id<>b.id and a.bid=b.cid and a.cid=b.bid and a.capa=b.capa 
+ group by a.id,a.geom,a.calle,a.cid,a.bid, a.capa,a.localidad)
+
+,cant as
+(select calle,cid,bid,capa,count(concat(calle,cid::text,bid::text,capa)) from geominco group by calle,cid,bid,capa) 
+							  
+,geominco_presalida as 
+(select geom,calle,capa,localidad from geominco where concat (calle,cid::text,bid::text,capa) in 
+(select concat (a.calle,a.cid::text,a.bid::text,a.capa) from cant a 
+ inner join cant b on a.cid+a.bid=b.cid+b.bid and a.calle=b.calle and a.count<=b.count and a.cid<>b.cid and a.capa=b.capa
+ group by a.calle,a.cid,a.bid,a.count,a.capa)
+ union
+ select geom,calle,capa,localidad from 
+(select a.id,a.geom,a.calle,a.localidad,b.capa from base a cross join geoms b)x where concat (x.id::text,capa) not in 
+(select concat (a.id::text,b.capa) from base a inner join geoms b on st_within (st_centroid(a.geom),b.geom)))
+
+,adminconexos_salida as
+(select st_buffer(geom,10)geom,concat(calle,'' ('',string_agg(distinct(capa),''-''),'')'') as calle,0 as fromleft,0 as toleft,0 as fromright,0 as toright,localidad,''geominconexos''::text as tipo 
+ from geominco_presalida group by geom,calle,localidad),
 
 largo_salida as (
 	select st_buffer(geom,10),calle,fromleft,toleft,fromright,toright,localidad,''largo''::text as tipo
