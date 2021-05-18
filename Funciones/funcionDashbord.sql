@@ -173,48 +173,22 @@ sentido_salida as
 	(select st_buffer(st_union(geom),10) as geom, calle, tipo from sentido
 	 where st_astext (geom) in (select st_astext (geom) from sentido2)
 	group by geom, calle, tipo
-	having count (concat(st_astext(geom), calle, tipo)) <> 1))x),
-nombre_salida as
-			(select null::geometry(polygon,5347) geom,
-			concat( ''("calle"= '', k ,acalle,k,'' or "calle"=  '',k, bcalle ,k,'' ) and "localidad" =  '',k, f.localidad,k) as calle, 
-			null::int as fromleft, null::int as toleft, null::int as fromright, null::int as toright,
-			null::text as localidad, ''nombre''::text as tipo
-			from base   a
-			inner join singlequote on k <> ''calle''
-			inner join 
-			(select localidad, acalle, bcalle
-			from (
-				select distinct on (acalleandbcalle) id, localidad, acalle, bcalle  from(select id,localidad,
-				case when 
-				acalle > bcalle then ARRAY[acalle, bcalle]
-				else ARRAY[bcalle, acalle]
-				end acalleandbcalle,
-				acalle,
-				bcalle
-				from (
-					select ROW_NUMBER() OVER() ID, c.localidad, acalle,bcalle  from (
-					SELECT a.localidad, a.calle acalle, b.calle bcalle FROM (
-						SELECT LOCALIDAD, CALLE FROM base  
-						WHERE CALLE IS NOT NULL AND CONTNOMBRE = 0
-						GROUP BY 1,2
-					) A
-					INNER JOIN (
-					SELECT LOCALIDAD, CALLE FROM base 
-					WHERE CALLE IS NOT NULL AND CONTNOMBRE = 0
-					GROUP BY 1,2 
-					) B ON A.LOCALIDAD = B.LOCALIDAD 
-					WHERE SIMILARITY(A.CALLE ,B.CALLE) > 0.45
-					AND A.CALLE <> B.CALLE)c
-					where acalle not like ''%NORTE'' and acalle not like ''%SUR'' and acalle not like ''%ESTE'' and acalle not like ''%OESTE'' AND Bcalle not like ''%NORTE'' and Bcalle not like ''%SUR'' and
-					bcalle not like ''%ESTE'' and bcalle not like ''%OESTE''  AND acalle NOT LIKE ''PJE%'' AND BCALLE NOT LIKE ''PJE%''
-					and acalle not like ''%BIS'' and bcalle not like ''%BIS'' and acalle not like ''%CALLE%'' AND BCALLE NOT LIKE ''%CALLE%''
-					AND acalle not like ''%DIAGONAL%'' AND bcalle not like ''%DIAGONAL%'' 
-					order by 1,2,3
-				) x
-				order by 3) x
-			) f order by 2,3)f
-			on a.localidad = f.localidad and (a.calle = f.acalle or a.calle = f.bcalle)
-			group by acalle, bcalle, f.localidad,k),
+	having count (concat(st_astext(geom), calle, tipo)) <> 1))x)
+,lines as 
+(select st_linemerge(st_makeline(geom order by path))geom,calle,localidad from
+	(select (st_dump(st_boundary(geom))).geom geom,(st_dump(st_boundary(geom))).path ,calle,localidad from 
+		(select st_linemerge(st_union(geom))geom,calle,localidad from base where contnombre=0 and calle is not null and
+ 		 calle not like all (array[''% NORTE'',''% SUR'',''% ESTE'',''% OESTE'',''% BIS'',''CALLE %'',''PJE %'',''DIAGONAL %'',''RP %'',''RN %''])
+ 	     group by calle,localidad)X)Y 
+ group by calle, localidad)
+								   
+,nombre_salida as 
+(select st_buffer(st_union(ageom,bgeom),10)geom,concat(acalle,'' - '',bcalle)calle,0 as fromleft,0 as toleft, 0 as fromright,0 as toright,localidad, ''nombre'' as tipo from 
+	(select a.geom ageom,a.calle acalle,b.geom bgeom,b.calle bcalle,a.localidad,
+	 degrees(st_angle(st_startpoint(a.geom),st_endpoint(a.geom),(st_dump(st_boundary(b.geom))).geom))angle from lines a 
+     inner join lines b on a.calle<>b.calle and similarity(a.calle,b.calle)>0.4 and a.localidad =b.localidad and a.calle<=b.calle)x
+ where angle between 170 and 190 or angle between 0 and 10 or angle between 350 and 360
+ group by acalle,ageom,bcalle,bgeom,localidad),
 
 continuidadaltura2_salida as 
 			(select st_buffer(geom,15) as geom , calle::text,fromleft::int, toleft::int,fromright::int, toright::int, localidad::text, ''callesduplicadas''::text as tipo from (

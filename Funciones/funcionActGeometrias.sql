@@ -225,7 +225,7 @@ EXECUTE (
 
     UPDATE capas_Gral.comisaria_cuadricula_argentina set borrado = 0 where borrado is null and fechamod ::date = ''today'';
     UPDATE capas_Gral.comisaria_zona_argentina set borrado = 0 where borrado is null and fechamod ::date = ''today'';
-
+    UPDATE capas_Gral.comisaria_zona_argentina set circ = departamen where circ is null and fechamod ::date = ''today'';
 
 
 
