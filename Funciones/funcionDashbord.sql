@@ -175,19 +175,22 @@ sentido_salida as
 	group by geom, calle, tipo
 	having count (concat(st_astext(geom), calle, tipo)) <> 1))x)
 ,lines as 
-(select st_linemerge(st_makeline(geom order by path))geom,calle,localidad from
-	(select (st_dump(st_boundary(geom))).geom geom,(st_dump(st_boundary(geom))).path ,calle,localidad from 
+(select geom,st_linemerge(st_makeline(punto order by path))linea,calle,localidad from
+	(select geom,(st_dumppoints(geom)).geom punto,(st_dumppoints(geom)).path ,calle,localidad from 
 		(select st_linemerge(st_union(geom))geom,calle,localidad from base where contnombre=0 and calle is not null and
  		 calle not like all (array[''% NORTE'',''% SUR'',''% ESTE'',''% OESTE'',''% BIS'',''CALLE %'',''PJE %'',''DIAGONAL %'',''RP %'',''RN %''])
  	     group by calle,localidad)X)Y 
- group by calle, localidad)
+ group by calle, localidad, geom)
 								   
 ,nombre_salida as 
-(select st_buffer(st_union(ageom,bgeom),10)geom,concat(acalle,'' - '',bcalle)calle,0 as fromleft,0 as toleft, 0 as fromright,0 as toright,localidad, ''nombre'' as tipo from 
+(select st_buffer(st_union(ageom,bgeom),10)geom,concat(acalle,'' - '',bcalle)calle,0 as fromleft,0 as toleft, 0 as fromright,0 as toright,localidad,''nombre'' as tipo from 							   
 	(select a.geom ageom,a.calle acalle,b.geom bgeom,b.calle bcalle,a.localidad,
-	 degrees(st_angle(st_startpoint(a.geom),st_endpoint(a.geom),(st_dump(st_boundary(b.geom))).geom))angle from lines a 
+	 degrees(st_angle(st_startpoint(a.linea),st_endpoint(a.linea),(st_dump(st_boundary(b.linea))).geom))angle_ab, 
+	 degrees(st_angle(st_startpoint(b.linea),st_endpoint(b.linea),(st_dump(st_boundary(a.linea))).geom))angle_ba 
+	 from lines a 
      inner join lines b on a.calle<>b.calle and similarity(a.calle,b.calle)>0.4 and a.localidad =b.localidad and a.calle<=b.calle)x
- where angle between 170 and 190 or angle between 0 and 10 or angle between 350 and 360
+ where (angle_ab between 175 and 190 or angle_ab between 0 and 5 or angle_ab between 355 and 360) and
+	   (angle_ba between 175 and 190 or angle_ba between 0 and 5 or angle_ba between 355 and 360)								
  group by acalle,ageom,bcalle,bgeom,localidad),
 
 continuidadaltura2_salida as 
