@@ -13,6 +13,7 @@ EXECUTE (
     update  capas_gral.departamento set geom =  ST_ForcePolygonCW (geom)  where  ST_IsPolygonCW (geom) = ''false'' and fechamod ::date = ''today'';
     update  capas_gral.localidades set geom =  ST_ForcePolygonCW (geom)  where  ST_IsPolygonCW (geom) = ''false'' and fechamod ::date = ''today'';
     update  capas_gral.asentamientos set geom =  ST_ForcePolygonCW (geom)  where  ST_IsPolygonCW (geom) = ''false'' and fechamod ::date = ''today''; 
+    update  capas_gral.barrios set geom =  ST_ForcePolygonCW (geom)  where  ST_IsPolygonCW (geom) = ''false'' and fechamod ::date = ''today'';
     
     
     create table test.general as select id, (st_dump(st_transform(geom,4326))).geom as "simple" from 
@@ -155,7 +156,7 @@ EXECUTE (
 
     update capas_gral.comisaria_zona_argentina set comin = upper(comin) where fechamod ::date = ''today'';
 
-    update capas_gral.comisaria_zona_argentina set departamen = upper (departamen) where fechamod ::date = ''today'';
+   
 
     update capas_gral.comisaria_zona_argentina a set localidad = b.localidad
     from capas_gral.localidades b
@@ -174,7 +175,9 @@ EXECUTE (
     where st_within (st_centroid(st_transform(a.geom,4326)), st_transform(b.geom,4326)) and a.departamen is  null and a.fechamod ::date = ''today'';
 
     update capas_gral.comisaria_zona_argentina a set departamen	= concat(''JEF. DE '', partido) WHERE departamen is  null and fechamod ::date = ''today'';
-                                                                                                                        
+
+    update capas_gral.comisaria_zona_argentina set departamen = upper (departamen) where fechamod ::date = ''today'';   
+                                                                                                               
     create table test.general as select id, (st_dump(st_transform(geom,4326))).geom as "simple" from 
     capas_gral.comisaria_cuadricula_argentina
     where fechamod ::date = ''today'';
@@ -217,11 +220,14 @@ EXECUTE (
     inner join capas_gral.provincia b on st_within (a.geom, b.geom)) b
     where a.id = b.id and a.idsoflex_prov is null;
 
+
     update capas_Gral.localidades a set idsoflex_prov = b.idsoflex_prov, idsoflex_dpto = b.idsoflex_dpto
-    from
-    (select a.id,b.idsoflex_prov, b.idsoflex_dpto from capas_gral.localidades a
-    inner join capas_gral.departamento b on st_within (a.geom, b.geom) ) b
-    where a.id = b.id  and a.idsoflex_prov is null OR a.idsoflex_dpto is null;
+        from (
+    select a.id, b.idsoflex_prov, b.idsoflex_dpto, B.PARTIDO  from capas_Gral.localidades a
+    inner join capas_gral.departamento b on ST_INTERSECTS (st_centroid(a.geom), b.geom)
+    WHERE a.idsoflex_prov is null or a.idsoflex_dpto is null
+    ORDER BY ID)b
+    where a.id = b.id and fechamod::date = ''today'';
 
     UPDATE capas_Gral.comisaria_cuadricula_argentina set borrado = 0 where borrado is null and fechamod ::date = ''today'';
     UPDATE capas_Gral.comisaria_zona_argentina set borrado = 0 where borrado is null and fechamod ::date = ''today'';
