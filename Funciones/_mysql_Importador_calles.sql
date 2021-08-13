@@ -103,6 +103,18 @@ update _mysql.callesintersecciones2 set cain_tiponumeracion = '''' where cain_ti
 
 update _mysql.callesintersecciones2 set cain_call_id_int2 = cain_call_id_int1 where cain_call_id_int2 is null and cain_latitud1 = cain_latitud2;
 
+update _mysql.calles set call_nombre = call_ruta_nombre where call_nombre is null;
+update _mysql.calles set call_nombre_org = call_ruta_nombre where call_nombre_org is null;
+update _mysql.callesintersecciones2 set cain_Desde = 0 where cain_desde is null;
+update _mysql.callesintersecciones2 set cain_hasta = 0 where cain_hasta is null;
+update _mysql.callesintersecciones2 set geom2 = st_setsrid(st_makepoint(cain_longitud2::double precision,cain_latitud2::double precision),4326) where geom2 is null;
+
+
+delete from _mysql.callesintersecciones2 where cain_call_id_int1 = cain_Call_id_int2;
+delete from _mysql.calles where call_depar_id is null or call_loca_id is null;
+delete from _mysql.callesalturas where caal_depar_id is null or caal_loca_id is null
+
+
 
 '
 

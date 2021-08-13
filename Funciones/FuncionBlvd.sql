@@ -24,7 +24,8 @@ create table if not exists test.b'||tabla||'  as
             select array_agg(ids) ids from ids;
           
 update _cartografia.'||tabla||' set "check" = ''FALSO'' where id in (select unnest(ids) from test.b'||tabla||');
-drop table if exists test.b'||tabla);
+
+drop table if exists test.b'||tabla || ' ; drop table if exists test.i'||tabla);
 
 return query execute ('select count(*)::int from _cartografia.'||tabla||' where tcalle = 12');
 END
