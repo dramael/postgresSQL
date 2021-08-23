@@ -7,8 +7,6 @@ EXECUTE (
 
 update _mysql.calles set geom = st_multi(st_setsrid(st_geomfromtext(wkt),4326)) where geom is null;
 update _mysql.callesalturas set geom = st_multi(st_setsrid(st_geomfromtext(wkt),4326))where geom is null;
-update _mysql.callesintersecciones2 set geom1 = st_setsrid(st_makepoint(cain_longitud1::double precision,cain_latitud1::double precision),4326);
-update _mysql.callesintersecciones2 set geom2 = st_setsrid(st_makepoint(cain_longitud2::double precision,cain_latitud2::double precision),4326);
 
 
 CREATE INDEX IF NOT EXISTS GEOMCALLES   ON 	_mysql.calles 					USING GIST (GEOM);
@@ -76,6 +74,15 @@ inner join _mysql.archivosdbf b on st_within (geom2,b.geom)) b
 where a.cain_id = b.cain_id and cain_arch_id = 1 or cain_arch_id is null;
 
 
+
+update _mysql.callesintersecciones2 set cain_uid = ''0'' where cain_uid is null;
+update _mysql.callesintersecciones2 set cain_fecha_actualizacion = now() where cain_fecha_actualizacion is null;
+update _mysql.callesintersecciones2 set cain_tiponumeracion = ''0'';
+
+
+update _mysql.callesintersecciones2 set cain_latitud1 = st_y(geom1), cain_longitud1 = st_x(geom1), cain_latitud2 = st_y(geom2), cain_longitud2 = st_x(geom2);
+
+
 update _mysql.calles set  CALL_ES_ALIAS=0 where call_es_alias is null;
 update _mysql.calles set  CALL_ALIAS_DE_CALL_ID=0 where CALL_ALIAS_DE_CALL_ID is null;
 update _mysql.calles  set call_tipo = 0;
@@ -88,27 +95,10 @@ update _mysql.callesalturas set CAAL_FECHA_ACTUALIZACION = now();
 
 
 
-update _mysql.callesintersecciones2 set cain_uid = ''0'' where cain_uid is null;
-update _mysql.callesintersecciones2  set cain_latitud1 = 0 where cain_latitud1 is null;
-update _mysql.callesintersecciones2  set cain_longitud1 = 0 where cain_longitud1 is null;
-update _mysql.callesintersecciones2  set cain_latitud2 = 0 where cain_latitud2 is null;
-update _mysql.callesintersecciones2  set cain_longitud2 = 0 where cain_longitud2 is null;
-update _mysql.callesintersecciones2 set cain_fecha_actualizacion = now()::timestamp::text where cain_fecha_actualizacion is null;
-update _mysql.callesintersecciones2 set cain_latitud1 = cain_latitud2 where cain_latitud1 = ''0'';
-update _mysql.callesintersecciones2 set cain_longitud1 = cain_longitud2 where cain_longitud1 = ''0'';
-update _mysql.callesintersecciones2 set cain_latitud2 = cain_latitud1 where cain_latitud2 = ''0'';
-update _mysql.callesintersecciones2 set cain_longitud2 = cain_longitud1 where cain_longitud2 = ''0'';
-update _mysql.callesintersecciones2 set cain_tiponumeracion = '''' where cain_tiponumeracion is null;
 
-
-update _mysql.callesintersecciones2 set cain_call_id_int2 = cain_call_id_int1 where cain_call_id_int2 is null and cain_latitud1 = cain_latitud2;
 
 update _mysql.calles set call_nombre = call_ruta_nombre where call_nombre is null;
 update _mysql.calles set call_nombre_org = call_ruta_nombre where call_nombre_org is null;
-update _mysql.callesintersecciones2 set cain_Desde = 0 where cain_desde is null;
-update _mysql.callesintersecciones2 set cain_hasta = 0 where cain_hasta is null;
-update _mysql.callesintersecciones2 set geom2 = st_setsrid(st_makepoint(cain_longitud2::double precision,cain_latitud2::double precision),4326) where geom2 is null;
-
 '
 
 
