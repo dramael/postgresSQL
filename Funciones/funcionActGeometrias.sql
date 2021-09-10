@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION test.actualizaciondegeometrias () RETURNS TABLE (tabla text, cantidad int) AS $func$
+CREATE OR REPLACE FUNCTION test.act_geometrias () RETURNS TABLE (tabla text, cantidad int) AS $func$
 BEGIN
 EXECUTE (
     '
@@ -64,7 +64,7 @@ EXECUTE (
     where a.id = b.id
     and a.fechamod ::date = ''today'';
     drop table test.general;
-    update capas_gral.barrios set barrio = upper(barrio) where fechamod ::date = ''today'';
+    update capas_gral.barrios set nombre = upper(nombre) where fechamod ::date = ''today'';
     update capas_gral.barrios a set localidad = b.localidad
     from capas_gral.localidades b
     where st_within (st_centroid(a.geom),b.geom) and a.localidad is null and a.fechamod ::date = ''today'';
@@ -217,8 +217,8 @@ EXECUTE (
     update capas_Gral.departamento a set idsoflex_prov = b.idsoflex_prov
     from
     (select a.id,b.idsoflex_prov from capas_gral.departamento a
-    inner join capas_gral.provincia b on st_within (a.geom, b.geom)) b
-    where a.id = b.id and a.idsoflex_prov is null;
+    inner join capas_gral.provincia b on st_within (ST_CENTROID(a.geom), b.geom)) b
+    where a.id = b.id and a.idsoflex_prov is null and fechamod::date = ''today'';
 
 
     update capas_Gral.localidades a set idsoflex_prov = b.idsoflex_prov, idsoflex_dpto = b.idsoflex_dpto

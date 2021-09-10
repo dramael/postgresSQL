@@ -82,6 +82,7 @@ update _mysql.callesintersecciones2 set cain_tiponumeracion = ''0'';
 
 update _mysql.callesintersecciones2 set cain_latitud1 = st_y(geom1), cain_longitud1 = st_x(geom1), cain_latitud2 = st_y(geom2), cain_longitud2 = st_x(geom2);
 
+update _mysql.callesintersecciones2 set geom3 = st_setsrid(st_makeline(geom1, geom2),4326);
 
 update _mysql.calles set  CALL_ES_ALIAS=0 where call_es_alias is null;
 update _mysql.calles set  CALL_ALIAS_DE_CALL_ID=0 where CALL_ALIAS_DE_CALL_ID is null;

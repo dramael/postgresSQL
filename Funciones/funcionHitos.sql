@@ -27,7 +27,7 @@ EXECUTE ('
 	update capas_gral.hitos a set localidad = b.localidad
 	from capas_gral.localidades b
 	where st_within (a.geom, st_transform(b.geom,4326)) and a.fechamod::date = ''today'' and a.localidad is null;
-	update capas_gral.hitos a set barrio = b.barrio
+	update capas_gral.hitos a set barrio = b.nombre
 	from capas_gral.barrios b
 	where st_within (a.geom, b.geom) and a.barrio is null and a.fechamod::date = ''today'';
 	update capas_gral.hitos  set tipo = upper (tipo) where fechamod::date = ''today'';
@@ -69,7 +69,7 @@ EXECUTE ('
 	update capas_gral.hitos_pol a set localidad = b.localidad
 	from capas_gral.localidades b
 	where st_within (st_centroid(a.geom), st_transform(b.geom,4326)) and a.localidad is null and a.fechamod::date = ''today'';
-	update capas_gral.hitos_pol a set barrio = b.barrio
+	update capas_gral.hitos_pol a set barrio = b.nombre
 	from capas_gral.barrios b
 	where st_within (st_centroid(a.geom), b.geom) and a.barrio is null and a.fechamod::date = ''today'';
 	update capas_gral.hitos_pol set nombre = trim(nombre) where fechamod::date = ''today'';
@@ -129,7 +129,7 @@ EXECUTE ('
 	update capas_gral.hitos_linea a set localidad = b.localidad
 	from capas_gral.localidades b
 	where st_within (st_centroid(a.geom), st_transform(b.geom,4326)) and a.localidad is null and a.fechamod::date = ''today'';
-	update capas_gral.hitos_linea a set barrio = b.barrio
+	update capas_gral.hitos_linea a set barrio = b.nombre
 	from capas_gral.barrios b
 	where st_within (st_centroid(a.geom), b.geom) and a.barrio is null and a.fechamod::date = ''today'';
 	update capas_gral.hitos_linea set nombre = trim(nombre) where fechamod::date = ''today'';
