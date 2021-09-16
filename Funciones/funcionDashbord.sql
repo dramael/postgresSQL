@@ -9,7 +9,7 @@ create table if not exists test.dashbord_'||tabla||' as
 with base as (select * from _cartografia.'||tabla||' ),
 frecuencia_salida as (
 				select st_buffer(geom,10) as geom , calle::text, fromleft::int, toleft::int,fromright::int, toright::int, localidad::text, ''frecuencia''::text as tipo from base
-				where 	((tcalle is null or tcalle <> 12) and ("check" <> ''FALSO'' or "check" is null) and (fromleft+toleft+fromright+toright) <>0 AND CALLE IS NOT NULL and (fromleft+toleft) <> 0 and (fromright+toright) <>0) 
+				where 	((tcalle <> 12) and ("check" <> ''FALSO'' or "check" is null) and (fromleft+toleft+fromright+toright) <>0 AND CALLE IS NOT NULL and (fromleft+toleft) <> 0 and (fromright+toright) <>0) 
 				and 	((right(fromleft::text,1) <> ''0'') or (right(toleft::text,1) <> ''8'') or (right(fromright::text,1) <> ''1'') or (right(toright::text,1) <> ''9''))
 				or 		((fromleft > toleft)or (fromright > toright))
 				or 		(fromleft > fromright and (fromright+toright) <>0)
@@ -84,7 +84,7 @@ continuidadaltura_salida as (
 					on (a.localidad = b.localidad and a.calle = b.calle and b.ind BETWEEN a.fromleft and a.toright)
 					where id is null 
 						) b on a.localidad = b.localidad and a.calle = b.calle
-				and ((a.fromleft+a.toleft+a.fromright+a.toright) <>0 AND a.CALLE IS NOT NULL and a.tcalle is null and (a.fromleft+a.toleft) <> 0 and (a.fromright+a.toright) <>0
+				and ((a.fromleft+a.toleft+a.fromright+a.toright) <>0 AND a.CALLE IS NOT NULL and a.tcalle = 0 and (a.fromleft+a.toleft) <> 0 and (a.fromright+a.toright) <>0
 				and b.ind+1 between a.fromleft and a.toright) 
 				order by id
 			) x
@@ -156,10 +156,10 @@ sentido as
 			(
 				
 				select ST_StartPoint ((st_dump(geom)).geom) as geom, calle, ''inicio'' as tipo from base  
-	where tcalle is null and calle is not null and sentido <> ''1''
+	where calle is not null and sentido <> ''1''
 	union all
 	select ST_EndPoint ((st_dump(geom)).geom) as geom, calle, ''fin'' as tipo from base 
-	where tcalle is null and calle is not null and sentido <> ''1''
+	where calle is not null and sentido <> ''1''
 	order by 1,2,3),
 
 sentido2 as 
@@ -412,9 +412,7 @@ nombresinconexos_salida as (
 	select st_buffer(geom,10) as geom, calle, 0 as fromleft,0 as toleft,0 as fromright,0 as toright,null as localidad ,''nombresinconexos'' as tipo from base
 	where id::int in (select id::int from inco4 union select id::int from inco6)),
 
-
 locparinconexos as (
-
 
 select partido,provincia from base
 group by partido,provincia order by count (partido) desc limit 1),
@@ -502,7 +500,6 @@ correcto as (
 ,subdividido_salida as (
 				select st_buffer(geom,10) geom, calle, fromleft, toleft, fromright,toright, null localidad, ''subdivido'' as tipo from Sinsertar)
 
-
 	select * from frecuencia_salida
 	union all 
 	select * from callesduplicadas_salida
@@ -527,16 +524,12 @@ correcto as (
 	union all
 	select * from subdividido_salida
 
-
-
-
-
 '
-
 
 );
 RETURN query execute ('
 	select tipo, count(*)::int as cantidad from  test.dashbord_'||tabla||' 	group by tipo');
 
 END
+
 $func$ LANGUAGE plpgsql;
