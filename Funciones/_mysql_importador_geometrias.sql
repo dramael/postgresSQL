@@ -7,7 +7,7 @@ create table if not exists _mysql.pais (pais_id int, pais_descripcion text, pais
 TRUNCATE TABLE _MYSQL.PAIS;
 
 INSERT INTO _MYSQL.pais (wkt, PAIS_ID,PAIS_DESCRIPCION,PAIS_FECHA_ACTUALIZACION, PAIS_HABILITADO)
-select 	st_astext(GEOM), ''1'',NOMBRE,FECHAMOD,''1'' from capas_gral.hitos_pol where tipo = ''PAIS'';
+select 	st_astext(GEOM), id,pais,now() as FECHAMOD,''1'' from capas_gral.pais WHERE pais in (select DISTINCT(PAIS) from capas_gral.departamento where PROVINCIA = ''' || tabla || ''');
 
 
 
@@ -17,7 +17,10 @@ create table if not exists _mysql.provincia
 TRUNCATE TABLE _MYSQL.PROVINCIA;
 
 INSERT INTO _MYSQL.PROVINCIA (PROV_ID,prov_pais_id, PROV_DESCRIPCION,prov_fecha_actualizacion,wkt,pais_habilitado)
-SELECT IDSOFLEX_PROV::INT,1,PROVINCIA,FECHAMOD,st_Astext(SIMPLE),1 FROM CAPAS_GRAL.PROVINCIA ORDER BY IDSOFLEX_PROV;
+SELECT IDSOFLEX_PROV::INT,B.ID,PROVINCIA,FECHAMOD,st_Astext(SIMPLE),1 FROM CAPAS_GRAL.PROVINCIA A INNER JOIN CAPAS_GRAL.PAIS B ON A.PAIS = B.PAIS
+WHERE pais in (select DISTINCT(PAIS) from capas_gral.departamento where PROVINCIA = ''' || tabla || ''') ORDER BY IDSOFLEX_PROV;
+
+
 
 
 
@@ -26,9 +29,10 @@ create table if not exists _mysql.departamento
 
 TRUNCATE TABLE _MYSQL.DEPARTAMENTO;
 
-insert into _mysql.departamento 
-(DEPAR_PROV_ID, depar_id,depar_descripcion, depar_fecha_actualizacion,depar_habilitado,depar_archivo_dbf,depar_fecha_archivo_dbf,wkt)
-select idsoflex_prov::INT,CONCAT(idsoflex_prov,idsoflex_dpto)::int, partido,fechamod,''1'',shp,now()::timestamp::text, st_astext(simple) from capas_Gral.departamento where provincia = ''' || tabla || ''';
+ insert into _mysql.departamento  (DEPAR_PROV_ID,  depar_id,  depar_descripcion,  depar_fecha_actualizacion,  depar_habilitado,  depar_archivo_dbf,  wkt)   SELECT b.id,IDSOFLEX_PROV::INT,PROVINCIA,FECHAMOD,1,1,st_Astext(SIMPLE) FROM CAPAS_GRAL.DEPARTAMENTO  a inner join capas_gral.pais b on a.pais = b.pais    where provincia = ''' || tabla || ''' and pais in (select DISTINCT(PAIS) from capas_gral.departamento where PROVINCIA = ''' || tabla || ''')  ORDER BY IDSOFLEX_PROV;
+
+
+
 
 
 create table if not exists _mysql.localidad
