@@ -5,24 +5,25 @@ EXECUTE (
 
         
     UPDATE capas_Gral.localidades set geom = st_makevalid(geom)							where st_isvalid(geom) = ''false'' and fechamod ::date = ''today'';
-    update  capas_gral.comisaria_cuadricula_argentina set geom =  st_makevalid(geom)   	where st_isvalid(geom) = ''false'' and fechamod ::date = ''today'';
+    update  capas_gral.comisaria_cuadricula_argentina set geom = st_makevalid(geom)   	where st_isvalid(geom) = ''false'' and fechamod ::date = ''today'';
     update  capas_gral.comisaria_zona_argentina set geom =  st_makevalid(geom)  		where st_isvalid(geom) = ''false'' and fechamod ::date = ''today'';
     update  capas_gral.departamento set geom =  st_makevalid(geom)   					where st_isvalid(geom) = ''false'' and fechamod ::date = ''today'';
     update  capas_gral.localidades set geom =  st_makevalid(geom)  						where st_isvalid(geom) = ''false'' and fechamod ::date = ''today'';
     update  capas_gral.asentamientos set geom =  st_makevalid(geom)  					where st_isvalid(geom) = ''false'' and fechamod ::date = ''today'';
     update  capas_gral.barrios set geom =  st_makevalid(geom)  							where st_isvalid(geom) = ''false'' and fechamod ::date = ''today'';
 
-    UPDATE capas_Gral.comisaria_cuadricula_argentina set geom = st_multi(ST_SimplifyPreserveTopology(geom,1)) where fechamod ::date = ''today'';
-    UPDATE capas_Gral.comisaria_zona_argentina set geom = st_multi(ST_SimplifyPreserveTopology(geom,1)) where fechamod ::date = ''today'';
-	UPDATE capas_Gral.barrios set geom = st_multi(ST_SimplifyPreserveTopology(geom,1)) where fechamod ::date = ''today'';
-	    
-    UPDATE capas_Gral.localidades set geom = st_multi(ST_SimplifyPreserveTopology(geom,1)) where fechamod ::date = ''today'';
-    update  capas_gral.comisaria_cuadricula_argentina set geom =  ST_ForcePolygonCW (geom)  where  ST_IsPolygonCW (geom) = ''false'' and fechamod ::date = ''today'';
-    update  capas_gral.comisaria_zona_argentina set geom =  ST_ForcePolygonCW (geom)  where  ST_IsPolygonCW (geom) = ''false'' and fechamod ::date = ''today'';
-    update  capas_gral.departamento set geom =  ST_ForcePolygonCW (geom)  where  ST_IsPolygonCW (geom) = ''false'' and fechamod ::date = ''today'';
-    update  capas_gral.localidades set geom =  ST_ForcePolygonCW (geom)  where  ST_IsPolygonCW (geom) = ''false'' and fechamod ::date = ''today'';
-    update  capas_gral.asentamientos set geom =  ST_ForcePolygonCW (geom)  where  ST_IsPolygonCW (geom) = ''false'' and fechamod ::date = ''today''; 
-    update  capas_gral.barrios set geom =  ST_ForcePolygonCW (geom)  where  ST_IsPolygonCW (geom) = ''false'' and fechamod ::date = ''today'';
+    update  capas_gral.comisaria_cuadricula_argentina 
+    set geom = ST_ForcePolygonCW (geom)                 where  ST_IsPolygonCW (geom) = ''false'' and fechamod ::date = ''today'';
+    update  capas_gral.comisaria_zona_argentina 
+    set geom =  ST_ForcePolygonCW (geom)                where  ST_IsPolygonCW (geom) = ''false'' and fechamod ::date = ''today'';
+    update  capas_gral.departamento 
+    set geom =  ST_ForcePolygonCW (geom)                where  ST_IsPolygonCW (geom) = ''false'' and fechamod ::date = ''today'';
+    update  capas_gral.localidades 
+    set geom =  ST_ForcePolygonCW (geom)                where  ST_IsPolygonCW (geom) = ''false'' and fechamod ::date = ''today'';
+    update  capas_gral.asentamientos 
+    set geom =  ST_ForcePolygonCW (geom)                where  ST_IsPolygonCW (geom) = ''false'' and fechamod ::date = ''today''; 
+    update  capas_gral.barrios 
+    set geom =  ST_ForcePolygonCW (geom)                where  ST_IsPolygonCW (geom) = ''false'' and fechamod ::date = ''today'';
     
     create table test.general as select id, (st_dump(st_transform(geom,4326))).geom as "simple" from 
     capas_gral.asentamientos
