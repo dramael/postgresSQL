@@ -1,8 +1,8 @@
 CREATE OR REPLACE FUNCTION test.act_calles(tabla varchar(30)) RETURNS TABLE (tipo text, cantidad int) AS $func$
 BEGIN 
 EXECUTE (
-	'update _cartografia.'||tabla||' set geom = st_multi(ST_SimplifyPreserveTopology(geom,1)) WHERE fechamod = ''today'';
-	update _cartografia.'||tabla||' set geom = st_multi(ST_SimplifyPreserveTopology(geom,50)) WHERE fechamod = ''today'' and length(st_astext(geom))> 4000 ;
+'update _cartografia.'||tabla||' set geom = ST_SimplifyPreserveTopology(geom,1) WHERE fechamod = ''today'';
+	update _cartografia.'||tabla||' set geom = ST_SimplifyPreserveTopology(geom,50) WHERE fechamod = ''today'' and length(st_astext(geom))> 4000 ;
 	delete  from _cartografia.'||tabla||' where ST_Length(geom) < 0.1 and fechamod = ''today'';
 	delete  from _cartografia.'||tabla||' where ST_Length(geom) is null and fechamod = ''today'';
 	update _cartografia.'||tabla||' set calle2 = concat (upper(calle),''/'', fromleft, ''/'', toleft, ''/'', fromright, ''/'', toright)
@@ -110,7 +110,6 @@ EXECUTE (
 	WHERE ST_WITHIN(st_centroid(a.geom), b.geom) and ((a.fechamod = ''today'') or 
 	(a.partido is null or a.provincia is null or a.localidad is null));
 
-	update _cartografia.'||tabla||' set geom = st_multi(ST_LineMerge(geom)) where fechamod = ''today'';
 
 	update _cartografia.'||tabla||' set callesdup = 0 where callesdup is null and fechamod = ''today'';
 	update _cartografia.'||tabla||' set contalt = 0 where contalt is null and fechamod = ''today'';
@@ -126,12 +125,10 @@ EXECUTE (
 	update _cartografia.'||tabla||' set calle = replace(calle,''-'', '' '')	where calle like ''%-%''and fechamod = ''today'';
 	update _cartografia.'||tabla||' set calle3 = replace(calle3,''-'', '' '')	where calle3 like ''%-%''and fechamod = ''today'';
 
-
-
-
 update _cartografia.'||tabla||' set calle = replace(calle,(SELECT k FROM public.singlequote), '' '')	where fechamod = ''today'';
 update _cartografia.'||tabla||' set calle3 = replace(calle3,(SELECT k FROM public.singlequote), '' '') where fechamod = ''today'';
 
+	
 	'
 	
 	);

@@ -18,7 +18,7 @@ TRUNCATE TABLE _MYSQL.PROVINCIA;
 
 INSERT INTO _MYSQL.PROVINCIA (PROV_ID,prov_pais_id, PROV_DESCRIPCION,prov_fecha_actualizacion,wkt,pais_habilitado)
 SELECT IDSOFLEX_PROV::INT,B.ID,PROVINCIA,FECHAMOD,st_Astext(SIMPLE),1 FROM CAPAS_GRAL.PROVINCIA A INNER JOIN CAPAS_GRAL.PAIS B ON A.PAIS = B.PAIS
-WHERE pais in (select DISTINCT(PAIS) from capas_gral.departamento where PROVINCIA = ''' || tabla || ''') ORDER BY IDSOFLEX_PROV;
+WHERE a.pais in (select DISTINCT(PAIS) from capas_gral.departamento where PROVINCIA = ''' || tabla || ''') ORDER BY IDSOFLEX_PROV;
 
 
 
@@ -29,7 +29,7 @@ create table if not exists _mysql.departamento
 
 TRUNCATE TABLE _MYSQL.DEPARTAMENTO;
 
- insert into _mysql.departamento  (DEPAR_PROV_ID,  depar_id,  depar_descripcion,  depar_fecha_actualizacion,  depar_habilitado,  depar_archivo_dbf,  wkt)   SELECT b.id,IDSOFLEX_PROV::INT,PROVINCIA,FECHAMOD,1,1,st_Astext(SIMPLE) FROM CAPAS_GRAL.DEPARTAMENTO  a inner join capas_gral.pais b on a.pais = b.pais    where provincia = ''' || tabla || ''' and pais in (select DISTINCT(PAIS) from capas_gral.departamento where PROVINCIA = ''' || tabla || ''')  ORDER BY IDSOFLEX_PROV;
+ insert into _mysql.departamento  (DEPAR_PROV_ID,  depar_id,  depar_descripcion,  depar_fecha_actualizacion,  depar_habilitado,  depar_archivo_dbf,  wkt)   SELECT b.id,IDSOFLEX_PROV::INT,PROVINCIA,FECHAMOD,1,1,st_Astext(SIMPLE) FROM CAPAS_GRAL.DEPARTAMENTO  a inner join capas_gral.pais b on a.pais = b.pais    where provincia = ''' || tabla || ''' and a.pais in (select DISTINCT(PAIS) from capas_gral.departamento where PROVINCIA = ''' || tabla || ''')  ORDER BY IDSOFLEX_PROV;
 
 
 
@@ -53,7 +53,7 @@ TRUNCATE TABLE _MYSQL.ARCHIVOSDBF;
 
 insert into _mysql.archivosdbf
 (id, arch_id, arch_nombre, arch_fecha_modificacion,arch_fecha_actualizacion,wkt)
-select id,arch_id,concat(shp,''.shp'') as arch_nombre,now()::timestamp::text as arch_fecha_modificacion ,now()::timestamp::text as arch_fecha_actualizacion, st_Astext(simple)  from capas_gral.departamento where provincia = ''' || tabla || ''';
+select id,arch_id,concat(shp,''.dbf'') as arch_nombre,now()::timestamp::text as arch_fecha_modificacion ,now()::timestamp::text as arch_fecha_actualizacion, st_Astext(simple)  from capas_gral.departamento where provincia = ''' || tabla || ''';
 
 
 
