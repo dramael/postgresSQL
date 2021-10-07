@@ -347,13 +347,13 @@ inconexos_salida as (
 		and	(c.fromleft+c.toleft)<>0 and (c.fromright+c.toright) =0) or
 		(b.fromright < c.fromright and a.fromright <> b.toright+2 and a.toright+2 <> c.fromright
 		and (b.fromright+b.toright) <> 0 and (b.fromleft+b.toleft)=0
-		and	(c.fromright+c.toright)<>0 and (c.fromleft+c.toleft) =0))
-		) and inconexos = 0 and ("check"<>''FALSO'' OR "check" is null) 
-		and concat(calle, fromleft,toleft,fromright,toright,localidad) not in (
-		select concat(calle, fromleft,toleft,fromright,toright,localidad) from callesduplicadas_salida
-		union all select concat(calle, fromleft,toleft,fromright,toright,localidad) from continuidadaltura_salida
-		union all select concat(calle, fromleft,toleft,fromright,toright,localidad) from continuidadaltura2_salida)
-		order by calle,fromleft,fromright,localidad),
+		and	(c.fromright+c.toright)<>0 and (c.fromleft+c.toleft) =0)))
+	and inconexos = 0 and ("check"<>''FALSO'' OR "check" is null) 
+	and concat(calle, fromleft,toleft,fromright,toright,localidad) not in (
+	select concat(calle, fromleft,toleft,fromright,toright,localidad) from callesduplicadas_salida
+	union all select concat(calle, fromleft,toleft,fromright,toright,localidad) from continuidadaltura_salida
+	union all select concat(calle, fromleft,toleft,fromright,toright,localidad) from continuidadaltura2_salida)
+	order by calle,fromleft,fromright,localidad),
 
 inco1 as (
 	select a.geom,a.id,a.calle,a.tipo,b.id as bid, b.calle as bcalle from nodos a
@@ -398,29 +398,21 @@ largo_salida as (
 	select st_buffer(geom,10),calle,fromleft,toleft,fromright,toright,localidad,''largo''::text as tipo
 	from base where length(st_astext(geom))> 4000),
 	
-calles as (
-	select row_number() over () pk, calles, ids from (select st_union(geom) as geom, string_agg(calle,'',''order by calle desc)calles, 
-	string_agg(id::Text,'','' order by id asc) as ids  from (
-		select ST_StartPoint((st_dump(geom)).geom) as geom, id,calle, fromleft,toleft,fromright,toright from base
-		union
-		select ST_EndPoint((st_dump(geom)).geom) as geom, id,calle, fromleft,toleft,fromright,toright from base) a
-	group by st_astext(geom)
-	having count (st_Astext(geom)) = 2) b
+subdivididos as (
+	select row_number() over () pk, calles, ids from (
+		select st_union(geom) as geom, string_agg(calle,'',''order by calle desc)calles, string_agg(id::Text,'','' order by id asc) as ids from (
+			select ST_StartPoint(geom) as geom, id,calle, fromleft,toleft,fromright,toright,localidad from base
+			union
+			select ST_EndPoint(geom) as geom, id,calle, fromleft,toleft,fromright,toright,localidad from base) a
+		group by st_astext(geom),localidad
+		having count (st_Astext(geom)) = 2) b
 	where split_part(calles,'','',1) = split_part(calles,'','',2)),
-correcto as (
-	select a.pk, a.ids from calles a
-	inner join calles b on a.calles = b.calles
-	where string_to_array(a.ids,'','',''['') && string_to_array(b.ids,'','',''['') or string_to_array(b.ids,'','',''['') && string_to_array(a.ids,'','',''['')
-	group by a.pk, a.ids
-	having count (a.pk::text) = 1), 
-sinsertar as (
-	select ST_LineMerge(st_union(geom)) as geom, calle, 
-	min(fromleft)fromleft, max(toleft)toleft, min (fromright)fromright, max(toright)toright, b.ids 
-	from base a
-	inner join correcto b on a.id::text in (split_part(ids,'','',1) , split_part(ids,'','',2))
-	group by pk, calle, b.ids)
-,subdividido_salida as (
-	select st_buffer(geom,10) geom, calle, fromleft, toleft, fromright,toright, null localidad, ''subdivido'' as tipo from Sinsertar)
+subdivididos_2 as (
+	select st_linemerge(st_union(geom1,geom2))geom,calle,localidad from (
+		select b.geom geom1,c.geom geom2, b.calle, b.localidad from subdivididos a
+		inner join base b on b.id::text  = split_part(a.ids,'','',1) inner join base c on c.id::text  = split_part(a.ids,'','',2))x),
+subdividido_salida as (
+	select st_buffer(geom,10) geom, calle, 0 fromleft, 0 toleft,0 fromright, 0 toright, localidad, ''subdivido'' as tipo from subdivididos_2)
 
 select * from nodos_salida
 union all

@@ -24,7 +24,7 @@ FOR tabla IN
 	LOOP
 	
 	EXECUTE ('
-			 update capas_gral.'||tabla||' set nombre = trim (upper (nombre)) 						where fechamod::date = ''today'';
+			 update capas_gral.'||tabla||' set nombre = trim(upper(nombre)) 						where fechamod::date = ''today'';
 			 update capas_gral.'||tabla||' set nombre = ''S/D'' 									where nombre is null and fechamod::date = ''today'';
 			 update capas_gral.'||tabla||' set nombre = translate(nombre, ''ÁÉÍÓÚ'',''AEIOU'')      where nombre like any (array[''%Á%'',''%É%'',''%Í%'',''%Ó%'',''%Ú%'']) and fechamod::date = ''today'';
 			 update capas_gral.'||tabla||' set nombre = translate(nombre,''ÖË'',''OE'')  			where nombre like any (array[''%Ö%'',''%Ë%'']) and fechamod::date = ''today'';
@@ -39,15 +39,20 @@ FOR tabla IN
 			 update capas_gral.'||tabla||' set nombre = replace(nombre , ''°'','''')				where nombre like ''%°%''and  fechamod::date = ''today'';
 			 update capas_gral.'||tabla||' set nombre = replace(nombre , ''  '','' '')				where nombre like ''%  %''and fechamod::date = ''today'';
 			 
-			 update capas_gral.'||tabla||' set back = upper (nombre) 								where back is null and fechamod::date = ''today'';
-			 update capas_gral.'||tabla||' set tipo = upper (tipo) 									where tipo is not null and fechamod::date = ''today'';
-			 update capas_gral.'||tabla||' set observacion = upper (observacion) 					where observacion is not null and fechamod::date = ''today'';
-			 update capas_gral.'||tabla||' set observacion = ''S/D''  								where observacion is null and fechamod::date = ''today'';
-		     update capas_gral.'||tabla||' set direccion = trim(initcap(direccion)) 				where fechamod::date = ''today'';
-			 update capas_gral.'||tabla||' set direccion = ''S/D'' 									where direccion is null and fechamod::date = ''today'';
-			 update capas_gral.'||tabla||' set etiqueta = upper (etiqueta) 							where etiqueta is not null and fechamod::date = ''today'';
-			 update capas_gral.'||tabla||' set borrado = 0 											where borrado is null and fechamod::date = ''today'';
-			 update capas_gral.'||tabla||' set telefono = ''S/D'' 									where telefono is null and fechamod::date = ''today'';
+			 update capas_gral.'||tabla||' set back = nombre	  	 								    where fechamod::date = ''today'';
+			 update capas_gral.'||tabla||' set tipo = upper(tipo) 									    where tipo is not null and fechamod::date = ''today'';
+			 update capas_gral.'||tabla||' set observacion = trim(upper(observacion)) 					where observacion is not null and fechamod::date = ''today'';
+ 			 update capas_gral.'||tabla||' set observacion = translate(observacion,''ÁÉÍÓÚ'',''AEIOU'') where observacion like any (array[''%Á%'',''%É%'',''%Í%'',''%Ó%'',''%Ú%'']) and fechamod::date = ''today'';
+			 update capas_gral.'||tabla||' set observacion = replace(observacion , ''  '','' '')		where observacion like ''%  %''and fechamod::date = ''today'';		 
+			 update capas_gral.'||tabla||' set observacion = ''S/D''  									where observacion is null and fechamod::date = ''today'';
+		     update capas_gral.'||tabla||' set direccion = trim(initcap(direccion)) 					where fechamod::date = ''today'';
+ 			 update capas_gral.'||tabla||' set direccion = initcap(translate(upper(direccion),''ÁÉÍÓÚ'',''AEIOU'')) 
+			 where direccion like any (array[''%Á%'',''%É%'',''%Í%'',''%Ó%'',''%Ú%'']) and fechamod::date = ''today'';
+			 update capas_gral.'||tabla||' set direccion = replace(direccion , ''  '','' '')			where direccion like ''%  %''and fechamod::date = ''today'';
+			 update capas_gral.'||tabla||' set direccion = ''S/D'' 										where direccion is null and fechamod::date = ''today'';
+			 update capas_gral.'||tabla||' set etiqueta = upper(etiqueta) 								where etiqueta is not null and fechamod::date = ''today'';
+			 update capas_gral.'||tabla||' set borrado = 0 												where borrado is null and fechamod::date = ''today'';
+			 update capas_gral.'||tabla||' set telefono = ''S/D'' 										where telefono is null and fechamod::date = ''today'';
 			 
 			 update capas_gral.'||tabla||' a set pais = b. pais
 		     from capas_gral.pais b
