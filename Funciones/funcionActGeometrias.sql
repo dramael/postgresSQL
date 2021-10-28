@@ -6,66 +6,17 @@ CREATE OR REPLACE FUNCTION test.act_geometrias(
 	)
     RETURNS TABLE(tabla text, cantidad integer) 
     LANGUAGE 'plpgsql'
-
     COST 100
-    VOLATILE 
+    VOLATILE PARALLEL UNSAFE
     ROWS 1000
+
 AS $BODY$
+
 DECLARE 
 
 tabla text; 
 
 BEGIN
-
-EXECUTE ('
-		 update capas_gral.provincias set provincia = upper (provincia) where fechamod ::date = ''today'';
-		 
-		 update capas_gral.partidos set partido = upper (partido) where fechamod ::date = ''today'';
-		 update capas_Gral.partidos a set idsoflex_prov = b.idsoflex_prov from
-         (select a.id,b.idsoflex_prov from capas_gral.partidos a
-         inner join capas_gral.provincias b on st_within (st_centroid(a.geom), b.geom)) b
-         where a.id = b.id and a.idsoflex_prov is null and fechamod::date = ''today'';
-		 
-		 update capas_gral.localidades set localidad = upper(localidad) where fechamod ::date = ''today'';
-		 update capas_Gral.localidades a set idsoflex_prov = b.idsoflex_prov, idsoflex_dpto = b.idsoflex_dpto from (
-    	 select a.id, b.idsoflex_prov, b.idsoflex_dpto, b.partido from capas_Gral.localidades a
-    	 inner join capas_gral.partidos b on st_intersects (st_centroid(a.geom), b.geom)
-    	 where a.idsoflex_prov is null or a.idsoflex_dpto is null
-    	 order BY ID) b
-    	 where a.id = b.id and fechamod::date = ''today'';
-		 
-		 update capas_gral.barrios set nombre = upper(nombre) where fechamod ::date = ''today''; 
-		 update capas_gral.asentamientos set nombre = upper (nombre) where fechamod ::date = ''today'';
-    	 
-		 update capas_gral.comisaria_circunscripciones set cliente = upper(cliente) where fechamod::date = ''today'';
-         update capas_gral.comisaria_circunscripciones set circunscri = upper (circunscri) where fechamod::date = ''today'';
-         update capas_gral.comisaria_circunscripciones set descripcio = upper (descripcio) where fechamod::date = ''today'';
-		 
-		 update capas_gral.comisaria_zonas set cliente = upper(cliente) where fechamod ::date = ''today'';
- 	     update capas_gral.comisaria_zonas set comin = upper(comin) where fechamod ::date = ''today'';
-    	 update capas_gral.comisaria_zonas a set departamen = b.circunscri from capas_gral.comisaria_circunscripciones b 
-		 where st_within (st_centroid(a.geom), b.geom) and a.departamen is  null and a.fechamod ::date = ''today'';
-		 update capas_gral.comisaria_zonas a set departamen	= concat(''JEF. DE '', partido) WHERE departamen is  null and fechamod ::date = ''today'';
-		 update capas_gral.comisaria_zonas set departamen = upper (departamen) where fechamod ::date = ''today'';
-		 update capas_Gral.comisaria_zonas set borrado = 0 where borrado is null and fechamod ::date = ''today'';
-		 update capas_Gral.comisaria_zonas set circ = departamen where circ is null and fechamod ::date = ''today'';
-		 
-		 update capas_gral.comisaria_cuadriculas a set comin = b.cria from capas_gral.comisaria_zonas b 
-    	 where st_within (st_centroid(a.geom), b.geom) and a.comin is  null and a.fechamod ::date = ''today'' and a.cliente = b.cliente; 
-    	 update capas_gral.comisaria_cuadriculas set cria = comin where cria is null and fechamod ::date = ''today'';
-		 update capas_gral.comisaria_cuadriculas set cliente = upper(cliente) where fechamod ::date = ''today'';
-		 update capas_gral.comisaria_cuadriculas set comin = upper(comin) where fechamod ::date = ''today'';
-		 update capas_gral.comisaria_cuadriculas a set departamen = b.circunscri from capas_gral.comisaria_circunscripciones b 
-		 where st_within (st_centroid(a.geom), b.geom) and a.departamen is  null and a.fechamod ::date = ''today'' and a.cliente = b.cliente;
-		 update capas_gral.comisaria_cuadriculas a set departamen = concat(''JEF. DE '', partido) where departamen is  null and fechamod ::date = ''today'';
-		 update capas_gral.comisaria_cuadriculas set departamen = upper (departamen) where fechamod ::date = ''today'';
-		 update capas_Gral.comisaria_cuadriculas set borrado = 0 where borrado is null and fechamod ::date = ''today'';
-		 
-		 update capas_gral.bomberos_jurisdicciones a set division = upper(division);
-    	 update capas_gral.bomberos_jurisdicciones a set nombre = upper(nombre);
-         update capas_gral.bomberos_jurisdicciones a set tipo = upper(tipo);
-		 
-		 ');
 
 FOR tabla IN
 	
@@ -105,8 +56,63 @@ FOR tabla IN
 	END IF;
 	
 	END LOOP;
-	
 
+EXECUTE ('
+		 update capas_gral.provincias set provincia = upper (provincia) where fechamod ::date = ''today'';
+		 
+		 update capas_gral.partidos set partido = upper (partido) where fechamod ::date = ''today'';
+		 update capas_Gral.partidos a set idsoflex_prov = b.idsoflex_prov from
+         (select a.id,b.idsoflex_prov from capas_gral.partidos a
+         inner join capas_gral.provincias b on st_within (st_centroid(a.geom), b.geom)) b
+         where a.id = b.id and a.idsoflex_prov is null and fechamod::date = ''today'';
+		 
+		 update capas_gral.localidades set localidad = upper(localidad) where fechamod ::date = ''today'';
+		 update capas_Gral.localidades a set idsoflex_prov = b.idsoflex_prov, idsoflex_dpto = b.idsoflex_dpto from (
+    	 select a.id, b.idsoflex_prov, b.idsoflex_dpto, b.partido from capas_Gral.localidades a
+    	 inner join capas_gral.partidos b on st_intersects (st_centroid(a.geom), b.geom)
+    	 where a.idsoflex_prov is null or a.idsoflex_dpto is null
+    	 order BY ID) b
+    	 where a.id = b.id and fechamod::date = ''today'';
+		 
+		 update capas_gral.barrios set nombre = trim(upper(nombre)) where fechamod::date = ''today'';
+		 update capas_gral.barrios set nombre = translate(nombre, ''ÁÉÍÓÚ'',''AEIOU'') where nombre like any (array[''%Á%'',''%É%'',''%Í%'',''%Ó%'',''%Ú%'']) and fechamod::date = ''today'';
+		 update capas_gral.barrios set nombre = replace(nombre , ''"'','' '') where nombre like ''%"%''and fechamod::date = ''today''; 
+		 update capas_gral.barrios set nombre = replace(nombre , ''  '','' '') where nombre like ''%  %''and fechamod::date = ''today''; 
+		 
+		 update capas_gral.asentamientos set nombre = trim(upper(nombre)) where fechamod::date = ''today'';
+		 update capas_gral.asentamientos set nombre = translate(nombre, ''ÁÉÍÓÚ'',''AEIOU'') where nombre like any (array[''%Á%'',''%É%'',''%Í%'',''%Ó%'',''%Ú%'']) and fechamod::date = ''today'';
+		 update capas_gral.asentamientos set nombre = replace(nombre , ''"'','' '') where nombre like ''%"%''and fechamod::date = ''today''; 
+		 update capas_gral.asentamientos set nombre = replace(nombre , ''  '','' '') where nombre like ''%  %''and fechamod::date = ''today'';
+    	 
+		 update capas_gral.comisaria_circunscripciones set cliente = upper(cliente) where fechamod::date = ''today'';
+         update capas_gral.comisaria_circunscripciones set circunscri = upper (circunscri) where fechamod::date = ''today'';
+         update capas_gral.comisaria_circunscripciones set descripcio = upper (descripcio) where fechamod::date = ''today'';
+		 
+		 update capas_gral.comisaria_zonas set cliente = upper(cliente) where fechamod ::date = ''today'';
+ 	     update capas_gral.comisaria_zonas set comin = upper(comin) where fechamod ::date = ''today'';
+    	 update capas_gral.comisaria_zonas a set departamen = b.circunscri from capas_gral.comisaria_circunscripciones b 
+		 where st_within (st_centroid(a.geom), b.geom) and a.departamen is  null and a.fechamod ::date = ''today'';
+		 update capas_gral.comisaria_zonas a set departamen	= concat(''JEF. DE '', partido) WHERE departamen is  null and fechamod ::date = ''today'';
+		 update capas_gral.comisaria_zonas set departamen = upper (departamen) where fechamod ::date = ''today'';
+		 update capas_Gral.comisaria_zonas set borrado = 0 where borrado is null and fechamod ::date = ''today'';
+		 update capas_Gral.comisaria_zonas set circ = departamen where circ is null and fechamod ::date = ''today'';
+		 
+		 update capas_gral.comisaria_cuadriculas a set comin = b.cria from capas_gral.comisaria_zonas b 
+    	 where st_within (st_centroid(a.geom), b.geom) and a.comin is  null and a.fechamod ::date = ''today'' and a.cliente = b.cliente and b.borrado = 0; 
+    	 update capas_gral.comisaria_cuadriculas set cria = comin where cria is null and fechamod ::date = ''today'';
+		 update capas_gral.comisaria_cuadriculas set cliente = upper(cliente) where fechamod ::date = ''today'';
+		 update capas_gral.comisaria_cuadriculas set comin = upper(comin) where fechamod ::date = ''today'';
+		 update capas_gral.comisaria_cuadriculas a set departamen = b.circunscri from capas_gral.comisaria_circunscripciones b 
+		 where st_within (st_centroid(a.geom), b.geom) and a.departamen is  null and a.fechamod ::date = ''today'' and a.cliente = b.cliente;
+		 update capas_gral.comisaria_cuadriculas a set departamen = concat(''JEF. DE '', partido) where departamen is  null and fechamod ::date = ''today'';
+		 update capas_gral.comisaria_cuadriculas set departamen = upper (departamen) where fechamod ::date = ''today'';
+		 update capas_Gral.comisaria_cuadriculas set borrado = 0 where borrado is null and fechamod ::date = ''today'';
+		 
+		 update capas_gral.bomberos_jurisdicciones a set division = upper(division);
+    	 update capas_gral.bomberos_jurisdicciones a set nombre = upper(nombre);
+         update capas_gral.bomberos_jurisdicciones a set tipo = upper(tipo);
+		 
+		 ');
 		 
 RETURN QUERY EXECUTE ('
     select concat(a.fechamod::date, '' Asentamientos'')::text, count (a.fechamod::date)::int
