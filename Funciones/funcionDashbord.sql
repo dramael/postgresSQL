@@ -412,7 +412,17 @@ subdivididos_2 as (
 		select b.geom geom1,c.geom geom2, b.calle, b.localidad from subdivididos a
 		inner join base b on b.id::text  = split_part(a.ids,'','',1) inner join base c on c.id::text  = split_part(a.ids,'','',2))x),
 subdividido_salida as (
-	select st_buffer(geom,10) geom, calle, 0 fromleft, 0 toleft,0 fromright, 0 toright, localidad, ''subdivido'' as tipo from subdivididos_2)
+	select st_buffer(geom,10) geom, calle, 0 fromleft, 0 toleft,0 fromright, 0 toright, localidad, ''subdivido'' as tipo from subdivididos_2),
+
+sentido_alturas as (
+select st_buffer(geom,10) geom,calle,0 fromleft,0 toleft,0 fromright,0 toright, null localidad,''sentido altura''::text as tipo from (
+	select a.geom, A.CALLE,A.id, STRING_AGG(distinct(B.CALLE),'','') calles from base a
+LEFT join base b on st_intersects (a.geom, b.geom) AND A.ID <> B.ID 
+							 
+							 
+ where a.sentido::int = 0 and a.fromleft+a.toleft+a.toright+a.fromright <>0
+GROUP BY A.ID, A.CALLE, a.geom)x
+where calles  not LIKE ''%'' || calle || ''%'')
 
 select * from nodos_salida
 union all
@@ -437,6 +447,8 @@ union all
 select * from sentido_salida
 union all
 select * from largo_salida
+union all
+select * from sentido_alturas
 		 
 ');
 
