@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION test.nodos (tabla text) RETURNS TABLE (cantidad int) AS $func$
+CREATE OR REPLACE FUNCTION _cartografia.nodos (tabla text) RETURNS TABLE (cantidad int) AS $func$
 BEGIN
 EXECUTE ('
 	drop table if exists test.nodos_'||tabla||';

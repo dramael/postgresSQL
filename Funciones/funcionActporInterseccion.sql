@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION test.actualizacionporinterseccion(tabla varchar(30)) RETURNS TABLE (cantidad int) AS $func$
+CREATE OR REPLACE FUNCTION _cartografia.actualizacionporinterseccion(tabla varchar(30)) RETURNS TABLE (cantidad int) AS $func$
 BEGIN
 EXECUTE (
 '

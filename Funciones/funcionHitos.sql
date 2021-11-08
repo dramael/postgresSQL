@@ -1,8 +1,8 @@
--- FUNCTION: test.hitos()
+-- FUNCTION: capas_gral.hitos()
 
--- DROP FUNCTION test.hitos();
+-- DROP FUNCTION capas_gral.hitos();
 
-CREATE OR REPLACE FUNCTION test.hitos(
+CREATE OR REPLACE FUNCTION capas_gral.hitos(
 	)
     RETURNS TABLE(tabla text, cantidad integer) 
     LANGUAGE 'plpgsql'
@@ -114,5 +114,5 @@ RETURN QUERY EXECUTE (
 END
 $BODY$;
 
-ALTER FUNCTION test.hitos()
+ALTER FUNCTION capas_gral.hitos()
     OWNER TO nahuel;

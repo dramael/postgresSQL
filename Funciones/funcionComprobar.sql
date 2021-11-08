@@ -1,6 +1,6 @@
 -- Comprueba las alturas de los segmentos contra la informacion que se encuentra georeferenciada
 
-CREATE OR REPLACE FUNCTION test.comprobar(tabla varchar(30)) RETURNS TABLE (cantidad int) AS $func$
+CREATE OR REPLACE FUNCTION _cartografia.comprobar(tabla varchar(30)) RETURNS TABLE (cantidad int) AS $func$
 BEGIN
 EXECUTE (
 

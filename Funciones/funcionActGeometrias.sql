@@ -1,8 +1,8 @@
--- FUNCTION: test.act_geometrias()
+-- FUNCTION: capas_gral.act_geometrias()
 
--- DROP FUNCTION test.act_geometrias();
+-- DROP FUNCTION capas_gral.act_geometrias();
 
-CREATE OR REPLACE FUNCTION test.act_geometrias(
+CREATE OR REPLACE FUNCTION capas_gral.act_geometrias(
 	)
     RETURNS TABLE(tabla text, cantidad integer) 
     LANGUAGE 'plpgsql'
@@ -159,5 +159,5 @@ RETURN QUERY EXECUTE ('
 END;
 $BODY$;
 
-ALTER FUNCTION test.act_geometrias()
+ALTER FUNCTION capas_gral.act_geometrias()
     OWNER TO gabriela;

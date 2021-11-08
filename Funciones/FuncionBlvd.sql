@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION test.blvd(tabla varchar(30)) RETURNS TABLE (cantidad int) AS $func$
+CREATE OR REPLACE FUNCTION _cartografia.blvd(tabla varchar(30)) RETURNS TABLE (cantidad int) AS $func$
 BEGIN
 EXECUTE (
 'create table if not exists test.i'||tabla||' as select id, geom, calle, fromleft,toleft,fromright, toright, localidad, contnombre, tcalle, "check" from _cartografia.'||tabla||';

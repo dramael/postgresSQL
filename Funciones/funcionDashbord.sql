@@ -1,8 +1,8 @@
--- FUNCTION: test.dashbord(character varying)
+-- FUNCTION: _cartografia.dashbord(character varying)
 
--- DROP FUNCTION test.dashbord(character varying);
+-- DROP FUNCTION _cartografia.dashbord(character varying);
 
-CREATE OR REPLACE FUNCTION test.dashbord(
+CREATE OR REPLACE FUNCTION _cartografia.dashbord(
 	tabla character varying)
     RETURNS TABLE(tipo text, cantidad integer) 
     LANGUAGE 'plpgsql'
@@ -472,5 +472,5 @@ RETURN query execute ('select tipo, count(*)::int as cantidad from  test.dashbor
 END
 $BODY$;
 
-ALTER FUNCTION test.dashbord(character varying)
+ALTER FUNCTION _cartografia.dashbord(character varying)
     OWNER TO nahuel;

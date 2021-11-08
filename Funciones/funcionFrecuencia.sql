@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION test.frecuencia(tabla varchar(30)) RETURNS TABLE (cantidad int ) AS $func$
+CREATE OR REPLACE FUNCTION _cartografia.frecuencia(tabla varchar(30)) RETURNS TABLE (cantidad int ) AS $func$
 BEGIN
 EXECUTE (
 

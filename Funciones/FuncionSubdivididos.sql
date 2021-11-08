@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION test.segmentossubdividos(tabla varchar(30)) 
+CREATE OR REPLACE FUNCTION _cartografia.segmentossubdividos(tabla varchar(30)) 
 RETURNS TABLE (cantidad int) AS $func$
 BEGIN
 EXECUTE (

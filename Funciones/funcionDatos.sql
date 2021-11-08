@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION test.act_calles(tabla varchar(30)) RETURNS TABLE (tipo text, cantidad int) AS $func$
+CREATE OR REPLACE FUNCTION _cartografia.act_calles(tabla varchar(30)) RETURNS TABLE (tipo text, cantidad int) AS $func$
 BEGIN 
 EXECUTE (
 'update _cartografia.'||tabla||' set geom = ST_SimplifyPreserveTopology(geom,1) WHERE fechamod = ''today'';

@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION test.sentido(tabla varchar(30)) 
+CREATE OR REPLACE FUNCTION _cartografia.sentido(tabla varchar(30)) 
 RETURNS TABLE (cantidad int) AS $func$
 BEGIN
 EXECUTE ('
