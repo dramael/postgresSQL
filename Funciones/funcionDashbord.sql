@@ -415,14 +415,29 @@ subdividido_salida as (
 	select st_buffer(geom,10) geom, calle, 0 fromleft, 0 toleft,0 fromright, 0 toright, localidad, ''subdivido'' as tipo from subdivididos_2),
 
 sentido_alturas as (
-select st_buffer(geom,10) geom,calle,0 fromleft,0 toleft,0 fromright,0 toright, null localidad,''sentido altura''::text as tipo from (
-	select a.geom, A.CALLE,A.id, STRING_AGG(distinct(B.CALLE),'','') calles from base a
-LEFT join base b on st_intersects (a.geom, b.geom) AND A.ID <> B.ID 
-							 
-							 
- where a.sentido::int = 0 and a.fromleft+a.toleft+a.toright+a.fromright <>0
-GROUP BY A.ID, A.CALLE, a.geom)x
-where calles  not LIKE ''%'' || calle || ''%'')
+	select st_buffer(geom,10) geom,calle,0 fromleft,0 toleft,0 fromright,0 toright, null localidad,''sentido altura''::text as tipo from (
+		select a.geom, A.CALLE, A.id, STRING_AGG(distinct(B.CALLE),'','') calles from base a
+		LEFT join base b on st_intersects (a.geom, b.geom) AND A.ID <> B.ID 
+		where a.sentido::int = 0 and a.fromleft+a.toleft+a.toright+a.fromright <>0
+		GROUP BY A.ID, A.CALLE, a.geom)x
+	where calles not LIKE ''%'' || calle || ''%''
+	union
+	select st_buffer(geom,10)geom, calle, fromleft, toleft, fromright, toright, null localidad, ''sentido altura''::text as tipo from base where id in(
+		select id from (
+			with sent as 
+			(select ST_StartPoint ((st_dump(geom)).geom) as geom, id, calle, ''INICIAL'' as nodo, fromleft, toleft,fromright,toright from base 
+			union
+			select ST_endPoint ((st_dump(geom)).geom) as geom, id, calle, ''FINAL'' as nodo, fromleft, toleft,fromright,toright from base)
+			,sent2 as 
+			(select a.id, a.calle, a.fromleft, a.toleft,a.fromright,a.toright, a.nodo, b.id as bid, b.nodo as bnodo, b.fromleft as bfromleft, b.toleft as btoleft,b.fromright as bfromright,b.toright as btoright 
+			from sent a inner join sent b on a.geom = b.geom WHERE a.calle = b.calle and a.id <> b.id 
+			and (((a.fromleft + a.toleft) <> 0 and (b.fromleft + b.toleft) <> 0) or
+			((a.fromright + a.toright) <> 0 and (b.fromright + b.toright) <> 0)))
+			select * from sent2 where 
+			(nodo = ''INICIAL'' and bfromleft > toleft and (fromleft + toleft)<>0 and (bfromleft + btoleft)<>0) 
+			or (nodo = ''INICIAL'' and bfromright > toright and (fromright + toright) <> 0 and (bfromright + btoright) <> 0) or
+			(nodo = ''FINAL'' and bfromleft < toleft and (fromleft+toleft) <> 0 and (bfromleft + btoleft) <> 0) 
+			or (nodo = ''FINAL'' and bfromright < toright and (fromright + toright) <> 0 and (bfromright + btoright) <> 0))x))
 
 select * from nodos_salida
 union all
