@@ -78,7 +78,8 @@ EXECUTE ('
 		 update capas_gral.barrios set nombre = translate(nombre, ''ÁÉÍÓÚ'',''AEIOU'') where nombre like any (array[''%Á%'',''%É%'',''%Í%'',''%Ó%'',''%Ú%'']) and fechamod::date = ''today'';
 		 update capas_gral.barrios set nombre = replace(nombre , ''"'','' '') where nombre like ''%"%''and fechamod::date = ''today''; 
 		 update capas_gral.barrios set nombre = replace(nombre , ''  '','' '') where nombre like ''%  %''and fechamod::date = ''today''; 
-		 
+		 update capas_gral.barrios set back = nombre where fechamod::date = ''today''; 
+
 		 update capas_gral.asentamientos set nombre = trim(upper(nombre)) where fechamod::date = ''today'';
 		 update capas_gral.asentamientos set nombre = translate(nombre, ''ÁÉÍÓÚ'',''AEIOU'') where nombre like any (array[''%Á%'',''%É%'',''%Í%'',''%Ó%'',''%Ú%'']) and fechamod::date = ''today'';
 		 update capas_gral.asentamientos set nombre = replace(nombre , ''"'','' '') where nombre like ''%"%''and fechamod::date = ''today''; 
