@@ -404,13 +404,14 @@ subdivididos as (
 			select ST_StartPoint(geom) as geom, id,calle, fromleft,toleft,fromright,toright,localidad from base
 			union
 			select ST_EndPoint(geom) as geom, id,calle, fromleft,toleft,fromright,toright,localidad from base) a
-		group by st_astext(geom),localidad
+		group by st_astext(geom)
 		having count (st_Astext(geom)) = 2) b
 	where split_part(calles,'','',1) = split_part(calles,'','',2)),
 subdivididos_2 as (
 	select st_linemerge(st_union(geom1,geom2))geom,calle,localidad from (
 		select b.geom geom1,c.geom geom2, b.calle, b.localidad from subdivididos a
-		inner join base b on b.id::text  = split_part(a.ids,'','',1) inner join base c on c.id::text  = split_part(a.ids,'','',2))x),
+		inner join base b on b.id::text  = split_part(a.ids,'','',1) inner join base c on c.id::text  = split_part(a.ids,'','',2)
+		where b.localidad = c.localidad)x),
 subdividido_salida as (
 	select st_buffer(geom,10) geom, calle, 0 fromleft, 0 toleft,0 fromright, 0 toright, localidad, ''subdivido'' as tipo from subdivididos_2),
 
